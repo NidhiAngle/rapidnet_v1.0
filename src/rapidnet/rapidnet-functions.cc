@@ -28,6 +28,7 @@
 using namespace ns3;
 using namespace rapidnet;
 
+
 Ptr<Value>
 FAppend::Eval (Ptr<Tuple> tuple)
 {
@@ -41,6 +42,20 @@ FAppend::New (Ptr<Expression> source)
 {
   Ptr<FAppend> retval = Create<FAppend> ();
   retval->m_source = source;
+  return retval;
+}
+
+Ptr<Value>
+FPredictImage::Eval(Ptr<Tuple> tuple)
+{
+  string file = str->Eval(tuple)->ToString();
+}
+
+Ptr<FunctionExpr>
+FPredictImage::New (Ptr<Expression> string)
+{
+  Ptr<FPredictImage> retval = Create<FPredictImage> ();
+  retval->str = string;
   return retval;
 }
 

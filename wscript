@@ -224,7 +224,6 @@ def configure(conf):
     conf.check_compilation_flag = types.MethodType(_check_compilation_flag, conf)
     conf.report_optional_feature = types.MethodType(report_optional_feature, conf)
     conf.env['NS3_OPTIONAL_FEATURES'] = []
-
     conf.env['NS3_BUILDDIR'] = conf.blddir
     conf.check_tool('compiler_cxx')
     conf.check_tool('cflags')

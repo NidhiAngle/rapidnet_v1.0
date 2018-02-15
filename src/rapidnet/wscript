@@ -4,6 +4,10 @@ def configure(conf):
   conf.env['CRYPTO'] = conf.check(lib='crypto', define_name='CRYPTO', uselib='CRYPTO')
   conf.report_optional_feature("crypto", "crypto library",
   conf.env['CRYPTO'], "library 'crypto' not found")
+  conf.env['CAFFE'] = conf.check(lib='caffe', define_name='CAFFE', uselib='CAFFE',
+                                 libpath="/netdb/data2/common_software/caffe/caffe/build/lib",
+                                 includes='/netdb/data2/common_software/caffe/caffe/include', mandatory=True)
+  #conf.env.append_value('INCLUDES',['/netdb/data2/common_software/caffe/caffe/include'])
 
 def build(bld):
     rapidnet = bld.create_ns3_module('rapidnet', ['node'])
@@ -34,11 +38,12 @@ def build(bld):
       'pki-authentication-manager.cc',
       'blowfish-encryption-manager.cc',
       'rapidnet-tcp-connection.cc',
+      'classification.cpp'
     ]
 
     if bld.env['CRYPTO']:
       rapidnet.uselib = 'CRYPTO'
-        
+    rapidnet.uselib = 'CAFFE'    
     headers = bld.new_task_gen('ns3header')
     headers.module = 'rapidnet'
     headers.source = [
@@ -71,4 +76,11 @@ def build(bld):
       'rapidnet-tcp-connection.h',
     ]
 
-    bld.env.append_value('LINKFLAGS', ['-lboost_serialization'])
+    bld.env.append_value('LINKFLAGS', ['-lboost_serialization',
+                                       #'-lcaffe',
+                                       #'-lglog',
+                                       #'-lopencv_core',
+                                       #'-lopencv_highgui',
+                                       #'-lopencv_imgproc',
+                                       #'-lboost_system',
+                                       '-lcrypto'])

@@ -55,6 +55,21 @@ protected:
   Ptr<Expression> m_source;
 };
 
+class FPredictImage : public FunctionExpr
+{
+public:
+ 
+  virtual ~FPredictImage () {}
+
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+  static Ptr<FunctionExpr> New (Ptr<Expression> string);
+
+  protected:
+
+  Ptr<Expression> str;
+};
+ 
 class FEmpty : public FunctionExpr
 {
 public:

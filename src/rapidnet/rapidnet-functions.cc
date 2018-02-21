@@ -16,7 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-
+#include <vector>
+#include <utility>
 #include "rapidnet-functions.h"
 #include <cstdlib>
 #include "ns3/simulator.h"
@@ -24,7 +25,7 @@
 #include "rapidnet-application-base.h"
 #include "rapidnet-utils.h"
 #include "expression.h"
-
+#include "classification.h"
 using namespace ns3;
 using namespace rapidnet;
 
@@ -49,6 +50,17 @@ Ptr<Value>
 FPredictImage::Eval(Ptr<Tuple> tuple)
 {
   string file = str->Eval(tuple)->ToString();
+  std::vector<std::pair<string, float> > predictions = getPrediction(file);
+  list<Ptr<Value> > result;
+  for (size_t i = 0; i < predictions.size(); ++i){
+    list<Ptr<Value> > temp;
+    temp.push_back(StrValue::New(predictions[i].first));
+    temp.push_back(RealValue::New(predictions[i].second)); 
+    result.push_back(ListValue::New(temp));
+  }
+  return ListValue::New(result);
+
+
 }
 
 Ptr<FunctionExpr>

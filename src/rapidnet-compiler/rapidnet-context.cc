@@ -837,6 +837,10 @@ LookupFunction (string functionName)
     {
       return "FSvRemove";
     }
+  else if(functionName == "f_predictimage")
+    {
+      return "FPredictImage";
+    }
   // no functions found, return error
   else
     {

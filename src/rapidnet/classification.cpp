@@ -12,7 +12,7 @@
 #include <string>
 #include <utility>
 #include <vector>
-
+#include "classification.h"
 #ifdef USE_OPENCV
 using namespace caffe;  // NOLINT(build/namespaces)
 using std::string;

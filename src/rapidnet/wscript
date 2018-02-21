@@ -74,6 +74,7 @@ def build(bld):
       'pki-authentication-manager.h',
       'blowfish-encryption-manager.h',
       'rapidnet-tcp-connection.h',
+      'classification.h'
     ]
 
     bld.env.append_value('LINKFLAGS', ['-lboost_serialization',

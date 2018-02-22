@@ -67,6 +67,7 @@ all_modules = (
     'applications/secure-simple-bgp',
     'applications/secure-pingpong',
     'l4-platform',
+    'applications/provenance',
     'applications/pingpong-l4',
     )
 

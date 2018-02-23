@@ -5,13 +5,14 @@
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 
-#define image(id, img) \
+#define image(node,id, img) \
   tuple (Provenance::IMAGE, \
-    attr ("image_attr1", Int32Value, id), \
-    attr ("image_attr2", StrValue, img))
+    attr ("image_attr1", Int32Value, node), \
+    attr ("image_attr2", Int32Value, id), \
+    attr ("image_attr3", StrValue, img))
 
-#define insertimage(id, img) \
-  app(id)->Insert (image (id, img));
+#define insertimage(node,id, img) \
+  app(node)->Insert (image (node,id, img));
 
 using namespace std;
 using namespace ns3;
@@ -30,7 +31,7 @@ void Print ()
 void
 UpdateImage ()
 {
-  insertimage (1, "/home/vnidhi/diaper.jpg");
+  insertimage (1,1, "/home/vnidhi/diaper.jpg");
 }
 
 int

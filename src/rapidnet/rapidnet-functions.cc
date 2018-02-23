@@ -72,6 +72,33 @@ FPredictImage::New (Ptr<Expression> string)
 }
 
 Ptr<Value>
+FClassify::Eval(Ptr<Tuple> tuple)
+{
+  
+  list<Ptr<Value> > result;
+  string toUse [] = {"father", "mother"};
+  for (size_t i = 0; i < 2; ++i){
+    list<Ptr<Value> > temp;
+    temp.push_back(StrValue::New(toUse[i]));
+    temp.push_back(RealValue::New(0.5));
+    result.push_back(ListValue::New(temp));
+  }
+  return ListValue::New(result);
+
+
+}
+
+
+Ptr<FunctionExpr>
+FClassify::New (Ptr<Expression> string)
+{
+  Ptr<FClassify> retval = Create<FClassify> ();
+  retval->str = string;
+  return retval;
+}
+
+
+Ptr<Value>
 FEmpty::Eval (Ptr<Tuple> tuple)
 {
   return ListValue::New ();

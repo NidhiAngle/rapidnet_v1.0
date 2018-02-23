@@ -841,6 +841,10 @@ LookupFunction (string functionName)
     {
       return "FPredictImage";
     }
+  else if(functionName == "f_classify")
+    {
+      return "FClassify";
+    }
   // no functions found, return error
   else
     {

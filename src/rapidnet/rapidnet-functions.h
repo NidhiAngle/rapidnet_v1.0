@@ -69,6 +69,21 @@ public:
 
   Ptr<Expression> str;
 };
+
+class FClassify : public FunctionExpr
+{
+public:
+
+  virtual ~FClassify () {}
+
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+  static Ptr<FunctionExpr> New (Ptr<Expression> string);
+
+  protected:
+
+  Ptr<Expression> str;
+};
  
 class FEmpty : public FunctionExpr
 {

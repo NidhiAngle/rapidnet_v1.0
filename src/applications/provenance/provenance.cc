@@ -16,11 +16,12 @@ using namespace ns3;
 using namespace ns3::rapidnet;
 using namespace ns3::rapidnet::provenance;
 
+const string Provenance::ASSOCIATIONRULE = "associationRule";
 const string Provenance::IMAGE = "image";
 const string Provenance::PITERATE = "pIterate";
 const string Provenance::PLIST = "pList";
-const string Provenance::PTMP = "pTmp";
 const string Provenance::PREDICTION = "prediction";
+const string Provenance::RESULT = "result";
 
 NS_LOG_COMPONENT_DEFINE ("Provenance");
 NS_OBJECT_ENSURE_REGISTERED (Provenance);
@@ -76,11 +77,25 @@ Provenance::InitDatabase ()
 {
   //RapidNetApplicationBase::InitDatabase ();
 
+  AddRelationWithKeys (ASSOCIATIONRULE, attrdeflist (
+    attrdef ("associationRule_attr1", IPV4),
+    attrdef ("associationRule_attr2", IPV4),
+    attrdef ("associationRule_attr3", IPV4)));
+
   AddRelationWithKeys (IMAGE, attrdeflist (
-    attrdef ("image_attr1", IPV4)));
+    attrdef ("image_attr1", IPV4),
+    attrdef ("image_attr2", IPV4)));
 
   AddRelationWithKeys (PREDICTION, attrdeflist (
-    attrdef ("prediction_attr1", IPV4)));
+    attrdef ("prediction_attr1", IPV4),
+    attrdef ("prediction_attr2", IPV4),
+    attrdef ("prediction_attr3", IPV4)));
+
+  AddRelationWithKeys (RESULT, attrdeflist (
+    attrdef ("result_attr1", IPV4),
+    attrdef ("result_attr2", IPV4),
+    attrdef ("result_attr3", IPV4),
+    attrdef ("result_attr4", IPV4)));
 
 }
 
@@ -93,21 +108,17 @@ Provenance::DemuxRecv (Ptr<Tuple> tuple)
     {
       R1Eca0Ins (tuple);
     }
-  if (IsInsertEvent (tuple, IMAGE))
-    {
-      R2Eca0Ins (tuple);
-    }
   if (IsRecvEvent (tuple, PLIST))
+    {
+      R2_eca (tuple);
+    }
+  if (IsRecvEvent (tuple, PITERATE))
     {
       R3_eca (tuple);
     }
   if (IsRecvEvent (tuple, PITERATE))
     {
       R4_eca (tuple);
-    }
-  if (IsRecvEvent (tuple, PITERATE))
-    {
-      R5_eca (tuple);
     }
 }
 
@@ -120,43 +131,24 @@ Provenance::R1Eca0Ins (Ptr<Tuple> image)
 
   result->Assign (Assignor::New ("List",
     FPredictImage::New (
-      VarExpr::New ("image_attr2"))));
+      VarExpr::New ("image_attr3"))));
 
   result = result->Project (
     PLIST,
     strlist ("image_attr1",
+      "image_attr2",
       "List"),
     strlist ("pList_attr1",
-      "pList_attr2"));
+      "pList_attr2",
+      "pList_attr3"));
 
   SendLocal (result);
 }
 
 void
-Provenance::R2Eca0Ins (Ptr<Tuple> image)
+Provenance::R2_eca (Ptr<Tuple> pList)
 {
-  RAPIDNET_LOG_INFO ("R2Eca0Ins triggered");
-
-  Ptr<Tuple> result = image;
-
-  result->Assign (Assignor::New ("Buf",
-    FEmpty::New (
-)));
-
-  result = result->Project (
-    PTMP,
-    strlist ("image_attr1",
-      "Buf"),
-    strlist ("pTmp_attr1",
-      "pTmp_attr2"));
-
-  SendLocal (result);
-}
-
-void
-Provenance::R3_eca (Ptr<Tuple> pList)
-{
-  RAPIDNET_LOG_INFO ("R3_eca triggered");
+  RAPIDNET_LOG_INFO ("R2_eca triggered");
 
   Ptr<Tuple> result = pList;
 
@@ -166,11 +158,45 @@ Provenance::R3_eca (Ptr<Tuple> pList)
   result = result->Project (
     PITERATE,
     strlist ("pList_attr1",
+      "pList_attr2",
       "N",
-      "pList_attr2"),
+      "pList_attr3"),
     strlist ("pIterate_attr1",
       "pIterate_attr2",
-      "pIterate_attr3"));
+      "pIterate_attr3",
+      "pIterate_attr4"));
+
+  SendLocal (result);
+}
+
+void
+Provenance::R3_eca (Ptr<Tuple> pIterate)
+{
+  RAPIDNET_LOG_INFO ("R3_eca triggered");
+
+  Ptr<Tuple> result = pIterate;
+
+  result->Assign (Assignor::New ("N",
+    Operation::New (RN_PLUS,
+      VarExpr::New ("pIterate_attr3"),
+      ValueExpr::New (Int32Value::New (1)))));
+
+  result = result->Select (Selector::New (
+    Operation::New (RN_LT,
+      VarExpr::New ("pIterate_attr3"),
+      FSize::New (
+        VarExpr::New ("pIterate_attr4")))));
+
+  result = result->Project (
+    PITERATE,
+    strlist ("pIterate_attr1",
+      "pIterate_attr2",
+      "N",
+      "pIterate_attr4"),
+    strlist ("pIterate_attr1",
+      "pIterate_attr2",
+      "pIterate_attr3",
+      "pIterate_attr4"));
 
   SendLocal (result);
 }
@@ -182,42 +208,12 @@ Provenance::R4_eca (Ptr<Tuple> pIterate)
 
   Ptr<Tuple> result = pIterate;
 
-  result->Assign (Assignor::New ("N",
-    Operation::New (RN_PLUS,
-      VarExpr::New ("pIterate_attr2"),
-      ValueExpr::New (Int32Value::New (1)))));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_LT,
-      VarExpr::New ("pIterate_attr2"),
-      FSize::New (
-        VarExpr::New ("pIterate_attr3")))));
-
-  result = result->Project (
-    PITERATE,
-    strlist ("pIterate_attr1",
-      "N",
-      "pIterate_attr3"),
-    strlist ("pIterate_attr1",
-      "pIterate_attr2",
-      "pIterate_attr3"));
-
-  SendLocal (result);
-}
-
-void
-Provenance::R5_eca (Ptr<Tuple> pIterate)
-{
-  RAPIDNET_LOG_INFO ("R5_eca triggered");
-
-  Ptr<Tuple> result = pIterate;
-
   result->Assign (Assignor::New ("AnotherList",
     FItem::New (
-      VarExpr::New ("pIterate_attr3"),
-      VarExpr::New ("pIterate_attr2"))));
+      VarExpr::New ("pIterate_attr4"),
+      VarExpr::New ("pIterate_attr3"))));
 
-  result->Assign (Assignor::New ("Pred",
+  result->Assign (Assignor::New ("Item",
     FItem::New (
       VarExpr::New ("AnotherList"),
       ValueExpr::New (Int32Value::New (1)))));
@@ -229,18 +225,20 @@ Provenance::R5_eca (Ptr<Tuple> pIterate)
 
   result = result->Select (Selector::New (
     Operation::New (RN_LTE,
-      VarExpr::New ("pIterate_attr2"),
+      VarExpr::New ("pIterate_attr3"),
       FSize::New (
-        VarExpr::New ("pIterate_attr3")))));
+        VarExpr::New ("pIterate_attr4")))));
 
   result = result->Project (
     PREDICTION,
     strlist ("pIterate_attr1",
-      "Pred",
+      "pIterate_attr2",
+      "Item",
       "Prob"),
     strlist ("prediction_attr1",
       "prediction_attr2",
-      "prediction_attr3"));
+      "prediction_attr3",
+      "prediction_attr4"));
 
   Insert (result);
 }

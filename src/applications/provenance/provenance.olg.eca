@@ -1,5 +1,4 @@
-ECA Rule r1Eca0Ins ACTION_LOCAL_SEND<pList(@Id, List)> :- EVENT_INSERT<image(@Id, Img)>, List := f_predictimage(Img).
-ECA Rule r2Eca0Ins ACTION_LOCAL_SEND<pTmp(@Id, Buf)> :- EVENT_INSERT<image(@Id, Img)>, Buf := f_empty().
-ECA Rule r3_eca ACTION_LOCAL_SEND<pIterate(@Id, N, List)> :- EVENT_RECV<pList(@Id, List)>, N := 1.
-ECA Rule r4_eca ACTION_LOCAL_SEND<pIterate(@Id, N, List)> :- EVENT_RECV<pIterate(@Id, N1, List)>, N1 < f_size(List), N := N1+ 1.
-ECA Rule r5_eca ACTION_ADD<prediction(@Id, Pred, Prob)> :- EVENT_RECV<pIterate(@Id, N, List)>, N <= f_size(List), AnotherList := f_item(List, N), Pred := f_item(AnotherList, 1), Prob := f_item(AnotherList, 2).
+ECA Rule r1Eca0Ins ACTION_LOCAL_SEND<pList(@Nd, Id, List)> :- EVENT_INSERT<image(@Nd, Id, Img)>, List := f_predictimage(Img).
+ECA Rule r2_eca ACTION_LOCAL_SEND<pIterate(@Nd, Id, N, List)> :- EVENT_RECV<pList(@Nd, Id, List)>, N := 1.
+ECA Rule r3_eca ACTION_LOCAL_SEND<pIterate(@Nd, Id, N, List)> :- EVENT_RECV<pIterate(@Nd, Id, N1, List)>, N1 < f_size(List), N := N1+ 1.
+ECA Rule r4_eca ACTION_ADD<prediction(@Nd, Id, Item, Prob)> :- EVENT_RECV<pIterate(@Nd, Id, N, List)>, N <= f_size(List), AnotherList := f_item(List, N), Item := f_item(AnotherList, 1), Prob := f_item(AnotherList, 2).

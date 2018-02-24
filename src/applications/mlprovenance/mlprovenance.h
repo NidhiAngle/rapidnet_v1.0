@@ -105,9 +105,9 @@ protected:
 
   virtual void DemuxRecv (Ptr<Tuple> tuple);
 
-  virtual void Prov_r1_1Eca1Ins (Ptr<Tuple> image);
+  virtual void Prov_r1_1Eca0Ins (Ptr<Tuple> image);
 
-  virtual void Prov_r1_1Eca1Del (Ptr<Tuple> image);
+  virtual void Prov_r1_1Eca0Del (Ptr<Tuple> image);
 
   virtual void Prov_r1_2_ecaAdd (Ptr<Tuple> epListTemp);
 

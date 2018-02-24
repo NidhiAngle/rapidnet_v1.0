@@ -182,11 +182,11 @@ Mlprovenance::DemuxRecv (Ptr<Tuple> tuple)
 
   if (IsInsertEvent (tuple, IMAGE))
     {
-      Prov_r1_1Eca1Ins (tuple);
+      Prov_r1_1Eca0Ins (tuple);
     }
   if (IsDeleteEvent (tuple, IMAGE))
     {
-      Prov_r1_1Eca1Del (tuple);
+      Prov_r1_1Eca0Del (tuple);
     }
   if (IsRecvEvent (tuple, EPLISTTEMP))
     {
@@ -587,14 +587,11 @@ Mlprovenance::DemuxRecv (Ptr<Tuple> tuple)
 }
 
 void
-Mlprovenance::Prov_r1_1Eca1Ins (Ptr<Tuple> image)
+Mlprovenance::Prov_r1_1Eca0Ins (Ptr<Tuple> image)
 {
-  RAPIDNET_LOG_INFO ("Prov_r1_1Eca1Ins triggered");
+  RAPIDNET_LOG_INFO ("Prov_r1_1Eca0Ins triggered");
 
   Ptr<Tuple> result = image;
-
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("List")));
 
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
@@ -610,7 +607,7 @@ Mlprovenance::Prov_r1_1Eca1Ins (Ptr<Tuple> image)
     FAppend::New (
       VarExpr::New ("PID1"))));
 
-  result->Assign (Assignor::New ("List",
+  result->Assign (Assignor::New ("L",
     FPredictImage::New (
       VarExpr::New ("image_attr3"))));
 
@@ -633,10 +630,10 @@ Mlprovenance::Prov_r1_1Eca1Ins (Ptr<Tuple> image)
     strlist ("RLOC",
       "image_attr1",
       "image_attr2",
-      "List",
+      "L",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("epListTemp_attr1",
       "epListTemp_attr2",
@@ -651,14 +648,11 @@ Mlprovenance::Prov_r1_1Eca1Ins (Ptr<Tuple> image)
 }
 
 void
-Mlprovenance::Prov_r1_1Eca1Del (Ptr<Tuple> image)
+Mlprovenance::Prov_r1_1Eca0Del (Ptr<Tuple> image)
 {
-  RAPIDNET_LOG_INFO ("Prov_r1_1Eca1Del triggered");
+  RAPIDNET_LOG_INFO ("Prov_r1_1Eca0Del triggered");
 
   Ptr<Tuple> result = image;
-
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("List")));
 
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
@@ -674,7 +668,7 @@ Mlprovenance::Prov_r1_1Eca1Del (Ptr<Tuple> image)
     FAppend::New (
       VarExpr::New ("PID1"))));
 
-  result->Assign (Assignor::New ("List",
+  result->Assign (Assignor::New ("L",
     FPredictImage::New (
       VarExpr::New ("image_attr3"))));
 
@@ -697,10 +691,10 @@ Mlprovenance::Prov_r1_1Eca1Del (Ptr<Tuple> image)
     strlist ("RLOC",
       "image_attr1",
       "image_attr2",
-      "List",
+      "L",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("epListTempDelete_attr1",
       "epListTempDelete_attr2",
@@ -913,9 +907,6 @@ Mlprovenance::Prov_r2_1_ecaAdd (Ptr<Tuple> pList)
 
   Ptr<Tuple> result = pList;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("pList_attr3")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -926,7 +917,7 @@ Mlprovenance::Prov_r2_1_ecaAdd (Ptr<Tuple> pList)
           VarExpr::New ("pList_attr2")),
         VarExpr::New ("pList_attr3")))));
 
-  result->Assign (Assignor::New ("pList_attr3",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -945,7 +936,7 @@ Mlprovenance::Prov_r2_1_ecaAdd (Ptr<Tuple> pList)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("pList_attr3")))));
+        VarExpr::New ("List")))));
 
   result = result->Project (
     EPITERATETEMP,
@@ -956,7 +947,7 @@ Mlprovenance::Prov_r2_1_ecaAdd (Ptr<Tuple> pList)
       "pList_attr3",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("epIterateTemp_attr1",
       "epIterateTemp_attr2",
@@ -978,9 +969,6 @@ Mlprovenance::Prov_r2_1_ecaDel (Ptr<Tuple> pListDelete)
 
   Ptr<Tuple> result = pListDelete;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("pListDelete_attr3")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -991,7 +979,7 @@ Mlprovenance::Prov_r2_1_ecaDel (Ptr<Tuple> pListDelete)
           VarExpr::New ("pListDelete_attr2")),
         VarExpr::New ("pListDelete_attr3")))));
 
-  result->Assign (Assignor::New ("pListDelete_attr3",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -1010,7 +998,7 @@ Mlprovenance::Prov_r2_1_ecaDel (Ptr<Tuple> pListDelete)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("pListDelete_attr3")))));
+        VarExpr::New ("List")))));
 
   result = result->Project (
     EPITERATETEMPDELETE,
@@ -1021,7 +1009,7 @@ Mlprovenance::Prov_r2_1_ecaDel (Ptr<Tuple> pListDelete)
       "pListDelete_attr3",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("epIterateTempDelete_attr1",
       "epIterateTempDelete_attr2",
@@ -1247,9 +1235,6 @@ Mlprovenance::Prov_r3_1_ecaAdd (Ptr<Tuple> pIterate)
 
   Ptr<Tuple> result = pIterate;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("pIterate_attr4")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -1262,7 +1247,7 @@ Mlprovenance::Prov_r3_1_ecaAdd (Ptr<Tuple> pIterate)
           VarExpr::New ("pIterate_attr3")),
         VarExpr::New ("pIterate_attr4")))));
 
-  result->Assign (Assignor::New ("pIterate_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -1283,7 +1268,7 @@ Mlprovenance::Prov_r3_1_ecaAdd (Ptr<Tuple> pIterate)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("pIterate_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LT,
@@ -1300,7 +1285,7 @@ Mlprovenance::Prov_r3_1_ecaAdd (Ptr<Tuple> pIterate)
       "pIterate_attr4",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("epIterateTemp_attr1",
       "epIterateTemp_attr2",
@@ -1322,9 +1307,6 @@ Mlprovenance::Prov_r3_1_ecaDel (Ptr<Tuple> pIterateDelete)
 
   Ptr<Tuple> result = pIterateDelete;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("pIterateDelete_attr4")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -1337,7 +1319,7 @@ Mlprovenance::Prov_r3_1_ecaDel (Ptr<Tuple> pIterateDelete)
           VarExpr::New ("pIterateDelete_attr3")),
         VarExpr::New ("pIterateDelete_attr4")))));
 
-  result->Assign (Assignor::New ("pIterateDelete_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -1358,7 +1340,7 @@ Mlprovenance::Prov_r3_1_ecaDel (Ptr<Tuple> pIterateDelete)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("pIterateDelete_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LT,
@@ -1375,7 +1357,7 @@ Mlprovenance::Prov_r3_1_ecaDel (Ptr<Tuple> pIterateDelete)
       "pIterateDelete_attr4",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("epIterateTempDelete_attr1",
       "epIterateTempDelete_attr2",
@@ -1409,7 +1391,7 @@ Mlprovenance::Prov_r4_1_ecaAdd (Ptr<Tuple> pIterate)
           VarExpr::New ("pIterate_attr3")),
         VarExpr::New ("pIterate_attr4")))));
 
-  result->Assign (Assignor::New ("pIterate_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -1440,7 +1422,7 @@ Mlprovenance::Prov_r4_1_ecaAdd (Ptr<Tuple> pIterate)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("pIterate_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LTE,
@@ -1457,7 +1439,7 @@ Mlprovenance::Prov_r4_1_ecaAdd (Ptr<Tuple> pIterate)
       "Prob",
       "RID",
       "R",
-      "pIterate_attr4",
+      "List",
       "RLOC"),
     strlist ("epredictionTemp_attr1",
       "epredictionTemp_attr2",
@@ -1491,7 +1473,7 @@ Mlprovenance::Prov_r4_1_ecaDel (Ptr<Tuple> pIterateDelete)
           VarExpr::New ("pIterateDelete_attr3")),
         VarExpr::New ("pIterateDelete_attr4")))));
 
-  result->Assign (Assignor::New ("pIterateDelete_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -1522,7 +1504,7 @@ Mlprovenance::Prov_r4_1_ecaDel (Ptr<Tuple> pIterateDelete)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("pIterateDelete_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LTE,
@@ -1539,7 +1521,7 @@ Mlprovenance::Prov_r4_1_ecaDel (Ptr<Tuple> pIterateDelete)
       "Prob",
       "RID",
       "R",
-      "pIterateDelete_attr4",
+      "List",
       "RLOC"),
     strlist ("epredictionTempDelete_attr1",
       "epredictionTempDelete_attr2",
@@ -2357,9 +2339,6 @@ Mlprovenance::Prov_r6_1_ecaAdd (Ptr<Tuple> identifiedPattern)
 
   Ptr<Tuple> result = identifiedPattern;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("List")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -2378,7 +2357,7 @@ Mlprovenance::Prov_r6_1_ecaAdd (Ptr<Tuple> identifiedPattern)
     FAppend::New (
       VarExpr::New ("PID1"))));
 
-  result->Assign (Assignor::New ("List",
+  result->Assign (Assignor::New ("L",
     FClassify::New (
       VarExpr::New ("identifiedPattern_attr4"))));
 
@@ -2401,12 +2380,12 @@ Mlprovenance::Prov_r6_1_ecaAdd (Ptr<Tuple> identifiedPattern)
     strlist ("RLOC",
       "identifiedPattern_attr1",
       "identifiedPattern_attr2",
-      "List",
+      "L",
       "identifiedPattern_attr4",
       "identifiedPattern_attr5",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("ecListTemp_attr1",
       "ecListTemp_attr2",
@@ -2429,9 +2408,6 @@ Mlprovenance::Prov_r6_1_ecaDel (Ptr<Tuple> identifiedPatternDelete)
 
   Ptr<Tuple> result = identifiedPatternDelete;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("List")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -2450,7 +2426,7 @@ Mlprovenance::Prov_r6_1_ecaDel (Ptr<Tuple> identifiedPatternDelete)
     FAppend::New (
       VarExpr::New ("PID1"))));
 
-  result->Assign (Assignor::New ("List",
+  result->Assign (Assignor::New ("L",
     FClassify::New (
       VarExpr::New ("identifiedPatternDelete_attr4"))));
 
@@ -2473,12 +2449,12 @@ Mlprovenance::Prov_r6_1_ecaDel (Ptr<Tuple> identifiedPatternDelete)
     strlist ("RLOC",
       "identifiedPatternDelete_attr1",
       "identifiedPatternDelete_attr2",
-      "List",
+      "L",
       "identifiedPatternDelete_attr4",
       "identifiedPatternDelete_attr5",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("ecListTempDelete_attr1",
       "ecListTempDelete_attr2",
@@ -2717,9 +2693,6 @@ Mlprovenance::Prov_r7_1_ecaAdd (Ptr<Tuple> cList)
 
   Ptr<Tuple> result = cList;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("cList_attr3")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -2734,7 +2707,7 @@ Mlprovenance::Prov_r7_1_ecaAdd (Ptr<Tuple> cList)
           VarExpr::New ("cList_attr4")),
         VarExpr::New ("cList_attr5")))));
 
-  result->Assign (Assignor::New ("cList_attr3",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -2753,7 +2726,7 @@ Mlprovenance::Prov_r7_1_ecaAdd (Ptr<Tuple> cList)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("cList_attr3")))));
+        VarExpr::New ("List")))));
 
   result = result->Project (
     ECITERATETEMP,
@@ -2766,7 +2739,7 @@ Mlprovenance::Prov_r7_1_ecaAdd (Ptr<Tuple> cList)
       "cList_attr5",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("ecIterateTemp_attr1",
       "ecIterateTemp_attr2",
@@ -2790,9 +2763,6 @@ Mlprovenance::Prov_r7_1_ecaDel (Ptr<Tuple> cListDelete)
 
   Ptr<Tuple> result = cListDelete;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("cListDelete_attr3")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -2807,7 +2777,7 @@ Mlprovenance::Prov_r7_1_ecaDel (Ptr<Tuple> cListDelete)
           VarExpr::New ("cListDelete_attr4")),
         VarExpr::New ("cListDelete_attr5")))));
 
-  result->Assign (Assignor::New ("cListDelete_attr3",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -2826,7 +2796,7 @@ Mlprovenance::Prov_r7_1_ecaDel (Ptr<Tuple> cListDelete)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("cListDelete_attr3")))));
+        VarExpr::New ("List")))));
 
   result = result->Project (
     ECITERATETEMPDELETE,
@@ -2839,7 +2809,7 @@ Mlprovenance::Prov_r7_1_ecaDel (Ptr<Tuple> cListDelete)
       "cListDelete_attr5",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("ecIterateTempDelete_attr1",
       "ecIterateTempDelete_attr2",
@@ -3091,9 +3061,6 @@ Mlprovenance::Prov_r8_1_ecaAdd (Ptr<Tuple> cIterate)
 
   Ptr<Tuple> result = cIterate;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("cIterate_attr4")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -3110,7 +3077,7 @@ Mlprovenance::Prov_r8_1_ecaAdd (Ptr<Tuple> cIterate)
           VarExpr::New ("cIterate_attr5")),
         VarExpr::New ("cIterate_attr6")))));
 
-  result->Assign (Assignor::New ("cIterate_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -3131,7 +3098,7 @@ Mlprovenance::Prov_r8_1_ecaAdd (Ptr<Tuple> cIterate)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("cIterate_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LT,
@@ -3150,7 +3117,7 @@ Mlprovenance::Prov_r8_1_ecaAdd (Ptr<Tuple> cIterate)
       "cIterate_attr6",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("ecIterateTemp_attr1",
       "ecIterateTemp_attr2",
@@ -3174,9 +3141,6 @@ Mlprovenance::Prov_r8_1_ecaDel (Ptr<Tuple> cIterateDelete)
 
   Ptr<Tuple> result = cIterateDelete;
 
-  result->Assign (Assignor::New ("$1",
-    VarExpr::New ("cIterateDelete_attr4")));
-
   result->Assign (Assignor::New ("PID1",
     FSha1::New (
       Operation::New (RN_PLUS,
@@ -3193,7 +3157,7 @@ Mlprovenance::Prov_r8_1_ecaDel (Ptr<Tuple> cIterateDelete)
           VarExpr::New ("cIterateDelete_attr5")),
         VarExpr::New ("cIterateDelete_attr6")))));
 
-  result->Assign (Assignor::New ("cIterateDelete_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -3214,7 +3178,7 @@ Mlprovenance::Prov_r8_1_ecaDel (Ptr<Tuple> cIterateDelete)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("cIterateDelete_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LT,
@@ -3233,7 +3197,7 @@ Mlprovenance::Prov_r8_1_ecaDel (Ptr<Tuple> cIterateDelete)
       "cIterateDelete_attr6",
       "RID",
       "R",
-      "$1",
+      "List",
       "RLOC"),
     strlist ("ecIterateTempDelete_attr1",
       "ecIterateTempDelete_attr2",
@@ -3273,7 +3237,7 @@ Mlprovenance::Prov_r9_1_ecaAdd (Ptr<Tuple> cIterate)
           VarExpr::New ("cIterate_attr5")),
         VarExpr::New ("cIterate_attr6")))));
 
-  result->Assign (Assignor::New ("cIterate_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -3307,7 +3271,7 @@ Mlprovenance::Prov_r9_1_ecaAdd (Ptr<Tuple> cIterate)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("cIterate_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LTE,
@@ -3325,7 +3289,7 @@ Mlprovenance::Prov_r9_1_ecaAdd (Ptr<Tuple> cIterate)
       "Prob",
       "RID",
       "R",
-      "cIterate_attr4",
+      "List",
       "RLOC"),
     strlist ("eresultTemp_attr1",
       "eresultTemp_attr2",
@@ -3364,7 +3328,7 @@ Mlprovenance::Prov_r9_1_ecaDel (Ptr<Tuple> cIterateDelete)
           VarExpr::New ("cIterateDelete_attr5")),
         VarExpr::New ("cIterateDelete_attr6")))));
 
-  result->Assign (Assignor::New ("cIterateDelete_attr4",
+  result->Assign (Assignor::New ("List",
     FAppend::New (
       VarExpr::New ("PID1"))));
 
@@ -3398,7 +3362,7 @@ Mlprovenance::Prov_r9_1_ecaDel (Ptr<Tuple> cIterateDelete)
         Operation::New (RN_PLUS,
           VarExpr::New ("R"),
           VarExpr::New ("RLOC")),
-        VarExpr::New ("cIterateDelete_attr4")))));
+        VarExpr::New ("List")))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LTE,
@@ -3416,7 +3380,7 @@ Mlprovenance::Prov_r9_1_ecaDel (Ptr<Tuple> cIterateDelete)
       "Prob",
       "RID",
       "R",
-      "cIterateDelete_attr4",
+      "List",
       "RLOC"),
     strlist ("eresultTempDelete_attr1",
       "eresultTempDelete_attr2",

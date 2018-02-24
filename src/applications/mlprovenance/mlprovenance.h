@@ -31,13 +31,61 @@ class Mlprovenance : public RapidNetApplicationBase
 public:
   static const string ASSOCIATIONRULE;
   static const string CITERATE;
+  static const string CITERATEDELETE;
   static const string CLIST;
+  static const string CLISTDELETE;
+  static const string EPRETURN;
+  static const string EPROVQUERY;
+  static const string ERRETURN;
+  static const string ERULEQUERY;
+  static const string ECITERATE;
+  static const string ECITERATEDELETE;
+  static const string ECITERATETEMP;
+  static const string ECITERATETEMPDELETE;
+  static const string ECLIST;
+  static const string ECLISTDELETE;
+  static const string ECLISTTEMP;
+  static const string ECLISTTEMPDELETE;
+  static const string EIDENTIFIEDPATTERN;
+  static const string EIDENTIFIEDPATTERNDELETE;
+  static const string EIDENTIFIEDPATTERNTEMP;
+  static const string EIDENTIFIEDPATTERNTEMPDELETE;
+  static const string EPITERATE;
+  static const string EPITERATEDELETE;
+  static const string EPITERATETEMP;
+  static const string EPITERATETEMPDELETE;
+  static const string EPLIST;
+  static const string EPLISTDELETE;
+  static const string EPLISTTEMP;
+  static const string EPLISTTEMPDELETE;
+  static const string EPREDICTION;
+  static const string EPREDICTIONDELETE;
+  static const string EPREDICTIONTEMP;
+  static const string EPREDICTIONTEMPDELETE;
+  static const string ERESULT;
+  static const string ERESULTDELETE;
+  static const string ERESULTTEMP;
+  static const string ERESULTTEMPDELETE;
   static const string IDENTIFIEDPATTERN;
+  static const string IDENTIFIEDPATTERNDELETE;
   static const string IMAGE;
   static const string PITERATE;
+  static const string PITERATEDELETE;
   static const string PLIST;
+  static const string PLISTDELETE;
+  static const string PQLIST;
+  static const string PRESULTTMP;
+  static const string PRETURN;
   static const string PREDICTION;
+  static const string PROV;
+  static const string PROVQUERY;
+  static const string RITERATE;
+  static const string RQLIST;
+  static const string RRESULTTMP;
+  static const string RRETURN;
   static const string RESULT;
+  static const string RULEEXEC;
+  static const string RULEQUERY;
 
   static TypeId GetTypeId (void);
 
@@ -57,25 +105,207 @@ protected:
 
   virtual void DemuxRecv (Ptr<Tuple> tuple);
 
-  virtual void R1Eca0Ins (Ptr<Tuple> image);
+  virtual void Prov_r1_1Eca1Ins (Ptr<Tuple> image);
 
-  virtual void R2_eca (Ptr<Tuple> pList);
+  virtual void Prov_r1_1Eca1Del (Ptr<Tuple> image);
 
-  virtual void R3_eca (Ptr<Tuple> pIterate);
+  virtual void Prov_r1_2_ecaAdd (Ptr<Tuple> epListTemp);
 
-  virtual void R4_eca (Ptr<Tuple> pIterate);
+  virtual void Prov_r1_2_ecaDel (Ptr<Tuple> epListTempDelete);
 
-  virtual void Eca0Ins (Ptr<Tuple> associationrule);
+  virtual void Prov_r1_3_ecaAdd (Ptr<Tuple> epListTemp);
 
-  virtual void Eca1Ins (Ptr<Tuple> prediction);
+  virtual void Prov_r1_3_ecaDel (Ptr<Tuple> epListTempDelete);
 
-  virtual void R6_eca (Ptr<Tuple> identifiedPattern);
+  virtual void Prov_r1_4_ecaAdd (Ptr<Tuple> epList);
 
-  virtual void R7_eca (Ptr<Tuple> cList);
+  virtual void Prov_r1_4_ecaDel (Ptr<Tuple> epListDelete);
 
-  virtual void R8_eca (Ptr<Tuple> cIterate);
+  virtual void Prov_r1_5_ecaAdd (Ptr<Tuple> epList);
 
-  virtual void R9_eca (Ptr<Tuple> cIterate);
+  virtual void Prov_r1_5_ecaDel (Ptr<Tuple> epListDelete);
+
+  virtual void Prov_r2_1_ecaAdd (Ptr<Tuple> pList);
+
+  virtual void Prov_r2_1_ecaDel (Ptr<Tuple> pListDelete);
+
+  virtual void Prov_r2_2_ecaAdd (Ptr<Tuple> epIterateTemp);
+
+  virtual void Prov_r2_2_ecaDel (Ptr<Tuple> epIterateTempDelete);
+
+  virtual void Prov_r2_3_ecaAdd (Ptr<Tuple> epIterateTemp);
+
+  virtual void Prov_r2_3_ecaDel (Ptr<Tuple> epIterateTempDelete);
+
+  virtual void Prov_r2_4_ecaAdd (Ptr<Tuple> epIterate);
+
+  virtual void Prov_r2_4_ecaDel (Ptr<Tuple> epIterateDelete);
+
+  virtual void Prov_r2_5_ecaAdd (Ptr<Tuple> epIterate);
+
+  virtual void Prov_r2_5_ecaDel (Ptr<Tuple> epIterateDelete);
+
+  virtual void Prov_r3_1_ecaAdd (Ptr<Tuple> pIterate);
+
+  virtual void Prov_r3_1_ecaDel (Ptr<Tuple> pIterateDelete);
+
+  virtual void Prov_r4_1_ecaAdd (Ptr<Tuple> pIterate);
+
+  virtual void Prov_r4_1_ecaDel (Ptr<Tuple> pIterateDelete);
+
+  virtual void Prov_r4_2_ecaAdd (Ptr<Tuple> epredictionTemp);
+
+  virtual void Prov_r4_2_ecaDel (Ptr<Tuple> epredictionTempDelete);
+
+  virtual void Prov_r4_3_ecaAdd (Ptr<Tuple> epredictionTemp);
+
+  virtual void Prov_r4_3_ecaDel (Ptr<Tuple> epredictionTempDelete);
+
+  virtual void Prov_r4_4_ecaAdd (Ptr<Tuple> eprediction);
+
+  virtual void Prov_r4_4_ecaDel (Ptr<Tuple> epredictionDelete);
+
+  virtual void Prov_r4_5_ecaAdd (Ptr<Tuple> eprediction);
+
+  virtual void Prov_r4_5_ecaDel (Ptr<Tuple> epredictionDelete);
+
+  virtual void Prov__1Eca0Ins (Ptr<Tuple> associationrule);
+
+  virtual void Prov__1Eca0Del (Ptr<Tuple> associationrule);
+
+  virtual void Prov__1Eca3Ins (Ptr<Tuple> prediction);
+
+  virtual void Prov__1Eca3Del (Ptr<Tuple> prediction);
+
+  virtual void Prov__2_ecaAdd (Ptr<Tuple> eidentifiedPatternTemp);
+
+  virtual void Prov__2_ecaDel (Ptr<Tuple> eidentifiedPatternTempDelete);
+
+  virtual void Prov__3_ecaAdd (Ptr<Tuple> eidentifiedPatternTemp);
+
+  virtual void Prov__3_ecaDel (Ptr<Tuple> eidentifiedPatternTempDelete);
+
+  virtual void Prov__4_ecaAdd (Ptr<Tuple> eidentifiedPattern);
+
+  virtual void Prov__4_ecaDel (Ptr<Tuple> eidentifiedPatternDelete);
+
+  virtual void Prov__5_ecaAdd (Ptr<Tuple> eidentifiedPattern);
+
+  virtual void Prov__5_ecaDel (Ptr<Tuple> eidentifiedPatternDelete);
+
+  virtual void Prov_r6_1_ecaAdd (Ptr<Tuple> identifiedPattern);
+
+  virtual void Prov_r6_1_ecaDel (Ptr<Tuple> identifiedPatternDelete);
+
+  virtual void Prov_r6_2_ecaAdd (Ptr<Tuple> ecListTemp);
+
+  virtual void Prov_r6_2_ecaDel (Ptr<Tuple> ecListTempDelete);
+
+  virtual void Prov_r6_3_ecaAdd (Ptr<Tuple> ecListTemp);
+
+  virtual void Prov_r6_3_ecaDel (Ptr<Tuple> ecListTempDelete);
+
+  virtual void Prov_r6_4_ecaAdd (Ptr<Tuple> ecList);
+
+  virtual void Prov_r6_4_ecaDel (Ptr<Tuple> ecListDelete);
+
+  virtual void Prov_r6_5_ecaAdd (Ptr<Tuple> ecList);
+
+  virtual void Prov_r6_5_ecaDel (Ptr<Tuple> ecListDelete);
+
+  virtual void Prov_r7_1_ecaAdd (Ptr<Tuple> cList);
+
+  virtual void Prov_r7_1_ecaDel (Ptr<Tuple> cListDelete);
+
+  virtual void Prov_r7_2_ecaAdd (Ptr<Tuple> ecIterateTemp);
+
+  virtual void Prov_r7_2_ecaDel (Ptr<Tuple> ecIterateTempDelete);
+
+  virtual void Prov_r7_3_ecaAdd (Ptr<Tuple> ecIterateTemp);
+
+  virtual void Prov_r7_3_ecaDel (Ptr<Tuple> ecIterateTempDelete);
+
+  virtual void Prov_r7_4_ecaAdd (Ptr<Tuple> ecIterate);
+
+  virtual void Prov_r7_4_ecaDel (Ptr<Tuple> ecIterateDelete);
+
+  virtual void Prov_r7_5_ecaAdd (Ptr<Tuple> ecIterate);
+
+  virtual void Prov_r7_5_ecaDel (Ptr<Tuple> ecIterateDelete);
+
+  virtual void Prov_r8_1_ecaAdd (Ptr<Tuple> cIterate);
+
+  virtual void Prov_r8_1_ecaDel (Ptr<Tuple> cIterateDelete);
+
+  virtual void Prov_r9_1_ecaAdd (Ptr<Tuple> cIterate);
+
+  virtual void Prov_r9_1_ecaDel (Ptr<Tuple> cIterateDelete);
+
+  virtual void Prov_r9_2_ecaAdd (Ptr<Tuple> eresultTemp);
+
+  virtual void Prov_r9_2_ecaDel (Ptr<Tuple> eresultTempDelete);
+
+  virtual void Prov_r9_3_ecaAdd (Ptr<Tuple> eresultTemp);
+
+  virtual void Prov_r9_3_ecaDel (Ptr<Tuple> eresultTempDelete);
+
+  virtual void Prov_r9_4_ecaAdd (Ptr<Tuple> eresult);
+
+  virtual void Prov_r9_4_ecaDel (Ptr<Tuple> eresultDelete);
+
+  virtual void Prov_r9_5_ecaAdd (Ptr<Tuple> eresult);
+
+  virtual void Prov_r9_5_ecaDel (Ptr<Tuple> eresultDelete);
+
+  virtual void Prov_edb_1Eca1Ins (Ptr<Tuple> associationrule);
+
+  virtual void Prov_edb_1Eca1Del (Ptr<Tuple> associationrule);
+
+  virtual void Prov_edb_2Eca1Ins (Ptr<Tuple> image);
+
+  virtual void Prov_edb_2Eca1Del (Ptr<Tuple> image);
+
+  virtual void Edb1_eca (Ptr<Tuple> provQuery);
+
+  virtual void Idb1_eca (Ptr<Tuple> provQuery);
+
+  virtual void Idb2_eca (Ptr<Tuple> provQuery);
+
+  virtual void Idb3_eca (Ptr<Tuple> provQuery);
+
+  virtual void Idb4_eca (Ptr<Tuple> pIterate);
+
+  virtual void Idb5_eca (Ptr<Tuple> pIterate);
+
+  virtual void Idb6_eca (Ptr<Tuple> eRuleQuery);
+
+  virtual void Idb7_eca (Ptr<Tuple> rReturn);
+
+  virtual void Idb8Eca0Ins (Ptr<Tuple> pResultTmp);
+
+  virtual void Idb8Eca1Ins (Ptr<Tuple> pQList);
+
+  virtual void Idb9_eca (Ptr<Tuple> ePReturn);
+
+  virtual void Rv1_eca (Ptr<Tuple> ruleQuery);
+
+  virtual void Rv2_eca (Ptr<Tuple> ruleQuery);
+
+  virtual void Rv3_eca (Ptr<Tuple> ruleQuery);
+
+  virtual void Rv4_eca (Ptr<Tuple> rIterate);
+
+  virtual void Rv5_eca (Ptr<Tuple> rIterate);
+
+  virtual void Rv6_eca (Ptr<Tuple> eProvQuery);
+
+  virtual void Rv7_eca (Ptr<Tuple> pReturn);
+
+  virtual void Rv8Eca0Ins (Ptr<Tuple> rResultTmp);
+
+  virtual void Rv8Eca1Ins (Ptr<Tuple> rQList);
+
+  virtual void Rv9_eca (Ptr<Tuple> eRReturn);
 
 };
 

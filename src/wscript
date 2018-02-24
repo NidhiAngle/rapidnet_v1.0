@@ -24,7 +24,6 @@ all_modules = (
     'devices/bridge',
     'devices/tap-bridge',
     'devices/virtual-net-device',
-    'applications/myproto',
     'applications/onoff',
     'applications/packet-sink',
     'applications/udp-echo',

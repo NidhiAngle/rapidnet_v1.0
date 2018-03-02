@@ -1730,7 +1730,7 @@ RapidNetContext::FormatExpression (ParseExpr* expr, int indent)
         {
           case ParseMath::PLUS: op = "RN_PLUS"; break;
           case ParseMath::MINUS: op = "RN_MINUS"; break;
-          case ParseMath::TIMES: op = "RN_MULT"; break;
+          case ParseMath::TIMES: op = "RN_TIMES"; break;
           case ParseMath::DIVIDE: op = "RN_DIV"; break;
           case ParseMath::LSHIFT: op = "RN_LSHIFT"; break;
           case ParseMath::RSHIFT: op = "RN_RSHIFT"; break;

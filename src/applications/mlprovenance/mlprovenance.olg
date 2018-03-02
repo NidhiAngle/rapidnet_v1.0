@@ -11,7 +11,7 @@ r3 pIterate(@Nd,Id, N, List) :- pIterate(@Nd,Id, N1,List), N1< f_size(List), N:=
 
 r4 prediction(@Nd,Id,Item,Prob) :- pIterate(@Nd,Id, N, List), N <= f_size(List), AnotherList:=f_item(List, N), Item:=f_item(AnotherList, 1), Prob:=f_item(AnotherList,2).
 
-identifiedPattern(@Nd,Id,Item, Rule, Prob) :- associationrule(@Nd,Item, Rule, Prob1), prediction(@Nd,Id, Item, Prob2), Prob:= Prob1.
+r5 identifiedPattern(@Nd,Id,Item, Rule, Prob) :- associationrule(@Nd,Item, Rule, Prob1), prediction(@Nd,Id, Item, Prob2), Prob:= Prob1*Prob2.
 
 r6 cList(@Nd,Id,List,Rule,Prob) :- identifiedPattern(@Nd, Id, Item, Rule, Prob), List:=f_classify(Rule).
 
@@ -19,4 +19,4 @@ r7 cIterate(@Nd,Id, N, List,Rule,Prob) :- cList(@Nd,Id, List,Rule,Prob), N:=1.
 
 r8 cIterate(@Nd,Id, N, List,Rule,Prob) :- cIterate(@Nd,Id, N1,List,Rule,Prob), N1< f_size(List), N:=N1+1.
 
-r9 result(@Nd,Id,Rule,Person,Prob) :- cIterate(@Nd,Id, N, List,Rule,Prob1), N <= f_size(List), AnotherList:=f_item(List, N), Person:=f_item(AnotherList, 1), Prob2:=f_item(AnotherList,2), Prob:=Prob1.
+r9 result(@Nd,Id,Rule,Person,Prob) :- cIterate(@Nd,Id, N, List,Rule,Prob1), N <= f_size(List), AnotherList:=f_item(List, N), Person:=f_item(AnotherList, 1), Prob2:=f_item(AnotherList,2), Prob:=Prob1*Prob2.

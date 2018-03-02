@@ -1,4 +1,4 @@
-/* Copyright (C) 1991-2016 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2014 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
@@ -27,9 +27,8 @@
    whether the overall intent is to support these features; otherwise,
    presume an older compiler has intent to support these features and
    define these macros by default.  */
-/* wchar_t uses Unicode 8.0.0.  Version 8.0 of the Unicode Standard is
-   synchronized with ISO/IEC 10646:2014, plus Amendment 1 (published
-   2015-05-15).  */
+/* wchar_t uses ISO/IEC 10646 (2nd ed., published 2011-03-15) /
+   Unicode 6.0.  */
 /* We do not support C11 <threads.h>.  */
 materialize(image,infinity,infinity,keys(1,2)).
 materialize(prediction,infinity,infinity,keys(1,2,3)).
@@ -39,7 +38,7 @@ r1 pList(@Nd,Id, L) :- image(@Nd,Id, Img), L:=f_predictimage(Img).
 r2 pIterate(@Nd,Id, N, L) :- pList(@Nd,Id, L), N:=1.
 r3 pIterate(@Nd,Id, N, L) :- pIterate(@Nd,Id, N1,L), N1< f_size(L), N:=N1+1.
 r4 prediction(@Nd,Id,Item,Prob) :- pIterate(@Nd,Id, N, L), N <= f_size(L), AnotherList:=f_item(L, N), Item:=f_item(AnotherList, 1), Prob:=f_item(AnotherList,2).
-identifiedPattern(@Nd,Id,Item, Rule, Prob) :- associationrule(@Nd,Item, Rule, Prob1), prediction(@Nd,Id, Item, Prob2), Prob:= Prob1 * Prob2.
+r5 identifiedPattern(@Nd,Id,Item, Rule, Prob) :- associationrule(@Nd,Item, Rule, Prob1), prediction(@Nd,Id, Item, Prob2), Prob:= Prob1 * Prob2.
 r6 cList(@Nd,Id,L,Rule,Prob) :- identifiedPattern(@Nd, Id, Item, Rule, Prob), L:=f_classify(Rule).
 r7 cIterate(@Nd,Id, N, L,Rule,Prob) :- cList(@Nd,Id, L,Rule,Prob), N:=1.
 r8 cIterate(@Nd,Id, N, L,Rule,Prob) :- cIterate(@Nd,Id, N1,L,Rule,Prob), N1< f_size(L), N:=N1+1.

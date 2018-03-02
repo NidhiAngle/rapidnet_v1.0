@@ -169,29 +169,29 @@ protected:
 
   virtual void Prov_r4_5_ecaDel (Ptr<Tuple> epredictionDelete);
 
-  virtual void Prov__1Eca0Ins (Ptr<Tuple> associationrule);
+  virtual void Prov_r5_1Eca0Ins (Ptr<Tuple> associationrule);
 
-  virtual void Prov__1Eca0Del (Ptr<Tuple> associationrule);
+  virtual void Prov_r5_1Eca0Del (Ptr<Tuple> associationrule);
 
-  virtual void Prov__1Eca3Ins (Ptr<Tuple> prediction);
+  virtual void Prov_r5_1Eca3Ins (Ptr<Tuple> prediction);
 
-  virtual void Prov__1Eca3Del (Ptr<Tuple> prediction);
+  virtual void Prov_r5_1Eca3Del (Ptr<Tuple> prediction);
 
-  virtual void Prov__2_ecaAdd (Ptr<Tuple> eidentifiedPatternTemp);
+  virtual void Prov_r5_2_ecaAdd (Ptr<Tuple> eidentifiedPatternTemp);
 
-  virtual void Prov__2_ecaDel (Ptr<Tuple> eidentifiedPatternTempDelete);
+  virtual void Prov_r5_2_ecaDel (Ptr<Tuple> eidentifiedPatternTempDelete);
 
-  virtual void Prov__3_ecaAdd (Ptr<Tuple> eidentifiedPatternTemp);
+  virtual void Prov_r5_3_ecaAdd (Ptr<Tuple> eidentifiedPatternTemp);
 
-  virtual void Prov__3_ecaDel (Ptr<Tuple> eidentifiedPatternTempDelete);
+  virtual void Prov_r5_3_ecaDel (Ptr<Tuple> eidentifiedPatternTempDelete);
 
-  virtual void Prov__4_ecaAdd (Ptr<Tuple> eidentifiedPattern);
+  virtual void Prov_r5_4_ecaAdd (Ptr<Tuple> eidentifiedPattern);
 
-  virtual void Prov__4_ecaDel (Ptr<Tuple> eidentifiedPatternDelete);
+  virtual void Prov_r5_4_ecaDel (Ptr<Tuple> eidentifiedPatternDelete);
 
-  virtual void Prov__5_ecaAdd (Ptr<Tuple> eidentifiedPattern);
+  virtual void Prov_r5_5_ecaAdd (Ptr<Tuple> eidentifiedPattern);
 
-  virtual void Prov__5_ecaDel (Ptr<Tuple> eidentifiedPatternDelete);
+  virtual void Prov_r5_5_ecaDel (Ptr<Tuple> eidentifiedPatternDelete);
 
   virtual void Prov_r6_1_ecaAdd (Ptr<Tuple> identifiedPattern);
 

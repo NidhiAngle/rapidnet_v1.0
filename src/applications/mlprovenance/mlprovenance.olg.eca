@@ -2,9 +2,9 @@ ECA Rule r1Eca0Ins ACTION_LOCAL_SEND<pList(@Nd, Id, List)> :- EVENT_INSERT<image
 ECA Rule r2_eca ACTION_LOCAL_SEND<pIterate(@Nd, Id, N, List)> :- EVENT_RECV<pList(@Nd, Id, List)>, N := 1.
 ECA Rule r3_eca ACTION_LOCAL_SEND<pIterate(@Nd, Id, N, List)> :- EVENT_RECV<pIterate(@Nd, Id, N1, List)>, N1 < f_size(List), N := N1+ 1.
 ECA Rule r4_eca ACTION_ADD<prediction(@Nd, Id, Item, Prob)> :- EVENT_RECV<pIterate(@Nd, Id, N, List)>, N <= f_size(List), AnotherList := f_item(List, N), Item := f_item(AnotherList, 1), Prob := f_item(AnotherList, 2).
-ECA Rule Eca0Ins ACTION_LOCAL_SEND<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_INSERT<associationrule(@Nd, Item, Rule, Prob1)>, prediction(@Nd, Id, Item, Prob2), Prob := Prob1.
-ECA Rule Eca1Ins ACTION_LOCAL_SEND<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_INSERT<prediction(@Nd, Id, Item, Prob2)>, associationrule(@Nd, Item, Rule, Prob1), Prob := Prob1.
+ECA Rule Eca0Ins ACTION_LOCAL_SEND<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_INSERT<associationrule(@Nd, Item, Rule, Prob1)>, prediction(@Nd, Id, Item, Prob2), Prob := Prob1* Prob2.
+ECA Rule Eca1Ins ACTION_LOCAL_SEND<identifiedPattern(@Nd, Id, Item, Rule, Prob)> :- EVENT_INSERT<prediction(@Nd, Id, Item, Prob2)>, associationrule(@Nd, Item, Rule, Prob1), Prob := Prob1* Prob2.
 ECA Rule r6_eca ACTION_LOCAL_SEND<cList(@Nd, Id, List, Rule, Prob)> :- EVENT_RECV<identifiedPattern(@Nd, Id, Item, Rule, Prob)>, List := f_classify(Rule).
 ECA Rule r7_eca ACTION_LOCAL_SEND<cIterate(@Nd, Id, N, List, Rule, Prob)> :- EVENT_RECV<cList(@Nd, Id, List, Rule, Prob)>, N := 1.
 ECA Rule r8_eca ACTION_LOCAL_SEND<cIterate(@Nd, Id, N, List, Rule, Prob)> :- EVENT_RECV<cIterate(@Nd, Id, N1, List, Rule, Prob)>, N1 < f_size(List), N := N1+ 1.
-ECA Rule r9_eca ACTION_ADD<result(@Nd, Id, Rule, Person, Prob)> :- EVENT_RECV<cIterate(@Nd, Id, N, List, Rule, Prob1)>, N <= f_size(List), AnotherList := f_item(List, N), Person := f_item(AnotherList, 1), Prob2 := f_item(AnotherList, 2), Prob := Prob1.
+ECA Rule r9_eca ACTION_ADD<result(@Nd, Id, Rule, Person, Prob)> :- EVENT_RECV<cIterate(@Nd, Id, N, List, Rule, Prob1)>, N <= f_size(List), AnotherList := f_item(List, N), Person := f_item(AnotherList, 1), Prob2 := f_item(AnotherList, 2), Prob := Prob1* Prob2.

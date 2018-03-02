@@ -283,7 +283,9 @@ Mlprovenance::Eca0Ins (Ptr<Tuple> associationrule)
     strlist ("associationrule_attr2", "associationrule_attr1"));
 
   result->Assign (Assignor::New ("Prob",
-    VarExpr::New ("associationrule_attr4")));
+    Operation::New (RN_TIMES,
+      VarExpr::New ("associationrule_attr4"),
+      VarExpr::New ("prediction_attr4"))));
 
   result = result->Project (
     IDENTIFIEDPATTERN,
@@ -314,7 +316,9 @@ Mlprovenance::Eca1Ins (Ptr<Tuple> prediction)
     strlist ("prediction_attr3", "prediction_attr1"));
 
   result->Assign (Assignor::New ("Prob",
-    VarExpr::New ("associationrule_attr4")));
+    Operation::New (RN_TIMES,
+      VarExpr::New ("associationrule_attr4"),
+      VarExpr::New ("prediction_attr4"))));
 
   result = result->Project (
     IDENTIFIEDPATTERN,
@@ -446,7 +450,9 @@ Mlprovenance::R9_eca (Ptr<Tuple> cIterate)
       ValueExpr::New (Int32Value::New (2)))));
 
   result->Assign (Assignor::New ("Prob",
-    VarExpr::New ("cIterate_attr6")));
+    Operation::New (RN_TIMES,
+      VarExpr::New ("cIterate_attr6"),
+      VarExpr::New ("Prob2"))));
 
   result = result->Select (Selector::New (
     Operation::New (RN_LTE,

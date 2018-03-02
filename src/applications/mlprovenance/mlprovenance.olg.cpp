@@ -35,12 +35,12 @@ materialize(image,infinity,infinity,keys(1,2)).
 materialize(prediction,infinity,infinity,keys(1,2,3)).
 materialize(associationrule,infinity,infinity, keys(1,2,3)).
 materialize(result,infinity, infinity, keys(1,2,3,4)).
-r1 pList(@Nd,Id, List) :- image(@Nd,Id, Img), List:=f_predictimage(Img).
-r2 pIterate(@Nd,Id, N, List) :- pList(@Nd,Id, List), N:=1.
-r3 pIterate(@Nd,Id, N, List) :- pIterate(@Nd,Id, N1,List), N1< f_size(List), N:=N1+1.
-r4 prediction(@Nd,Id,Item,Prob) :- pIterate(@Nd,Id, N, List), N <= f_size(List), AnotherList:=f_item(List, N), Item:=f_item(AnotherList, 1), Prob:=f_item(AnotherList,2).
-identifiedPattern(@Nd,Id,Item, Rule, Prob) :- associationrule(@Nd,Item, Rule, Prob1), prediction(@Nd,Id, Item, Prob2), Prob:= Prob1*Prob2.
-r6 cList(@Nd,Id,List,Rule,Prob) :- identifiedPattern(@Nd, Id, Item, Rule, Prob), List:=f_classify(Rule).
-r7 cIterate(@Nd,Id, N, List,Rule,Prob) :- cList(@Nd,Id, List,Rule,Prob), N:=1.
-r8 cIterate(@Nd,Id, N, List,Rule,Prob) :- cIterate(@Nd,Id, N1,List,Rule,Prob), N1< f_size(List), N:=N1+1.
-r9 result(@Nd,Id,Rule,Person,Prob) :- cIterate(@Nd,Id, N, List,Rule,Prob1), N <= f_size(List), AnotherList:=f_item(List, N), Person:=f_item(AnotherList, 1), Prob2:=f_item(AnotherList,2), Prob:=Prob1*Prob2.
+r1 pList(@Nd,Id, L) :- image(@Nd,Id, Img), L:=f_predictimage(Img).
+r2 pIterate(@Nd,Id, N, L) :- pList(@Nd,Id, L), N:=1.
+r3 pIterate(@Nd,Id, N, L) :- pIterate(@Nd,Id, N1,L), N1< f_size(L), N:=N1+1.
+r4 prediction(@Nd,Id,Item,Prob) :- pIterate(@Nd,Id, N, L), N <= f_size(L), AnotherL:=f_item(L, N), Item:=f_item(AnotherL, 1), Prob:=f_item(AnotherL,2).
+r5 identifiedPattern(@Nd,Id,Item, Rule, Prob) :- associationrule(@Nd,Item, Rule, Prob1), prediction(@Nd,Id, Item, Prob2), Prob:= Prob1*Prob2.
+r6 cList(@Nd,Id,L,Rule,Prob) :- identifiedPattern(@Nd, Id, Item, Rule, Prob), L:=f_classify(Rule).
+r7 cIterate(@Nd,Id, N, L,Rule,Prob) :- cList(@Nd,Id, L,Rule,Prob), N:=1.
+r8 cIterate(@Nd,Id, N, L,Rule,Prob) :- cIterate(@Nd,Id, N1,L,Rule,Prob), N1< f_size(L), N:=N1+1.
+r9 result(@Nd,Id,Rule,Person,Prob) :- cIterate(@Nd,Id, N, L,Rule,Prob1), N <= f_size(L), AnotherL:=f_item(L, N), Person:=f_item(AnotherL, 1), Prob2:=f_item(AnotherL,2), Prob:=Prob1*Prob2.

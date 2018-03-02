@@ -231,10 +231,10 @@ void Classifier::Preprocess(const cv::Mat& img,
 std::vector<std::pair<string, float> > getPrediction(string file){
   //::google::InitGoogleLogging("./build/examples/cpp_classification/classification.bin");
 
-  string model_file   = "/media/sdb1/nfs/iped/rapidnet/caffe/models/bvlc_reference_caffenet/deploy.prototxt";
-  string trained_file = "/media/sdb1/nfs/iped/rapidnet/caffe/models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel";
-  string mean_file    = "/media/sdb1/nfs/iped/rapidnet/caffe/data/ilsvrc12/imagenet_mean.binaryproto";
-  string label_file   = "/media/sdb1/nfs/iped/rapidnet/caffe/data/ilsvrc12/synset_words.txt";
+  string model_file   = "/media/sdb1/nfs/shared/caffe/models/bvlc_reference_caffenet/deploy.prototxt";
+  string trained_file = "/media/sdb1/nfs/shared/caffe/models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel";
+  string mean_file    = "/media/sdb1/nfs/shared/caffe/data/ilsvrc12/imagenet_mean.binaryproto";
+  string label_file   = "/media/sdb1/nfs/shared/caffe/data/ilsvrc12/synset_words.txt";
   Classifier classifier(model_file, trained_file, mean_file, label_file);
 
   //string file = argv[5];

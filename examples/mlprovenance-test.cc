@@ -7,22 +7,22 @@
 
 #define image(node,id, img) \
   tuple (Mlprovenance::IMAGE, \
-    attr ("image_attr1", Int32Value, node),\
+    attr ("image_attr1", Ipv4Value, node),\
     attr ("image_attr2", Int32Value, id), \
     attr ("image_attr3", StrValue, img))
 
 #define associationrule(node, item, rule, probability)\
   tuple (Mlprovenance::ASSOCIATIONRULE, \
-    attr ("associationrule_attr1", Int32Value, node),\
+    attr ("associationrule_attr1", Ipv4Value, node),\
     attr ("associationrule_attr2", StrValue, item),\
     attr ("associationrule_attr3", StrValue, rule),\
     attr ("associationrule_attr4", RealValue, probability))
 
 #define insertimage(node,id, img) \
-  app(node)->Insert (image (node,id, img));
+  app(node)->Insert (image (addr(node),id, img));
 
 #define insertrule(node,item,rule,probability) \
-  app(node)->Insert (associationrule(node,item,rule,probability));
+  app(node)->Insert (associationrule(addr(node),item,rule,probability));
  
 using namespace std;
 using namespace ns3;

@@ -5,8 +5,8 @@ def configure(conf):
   conf.report_optional_feature("crypto", "crypto library",
   conf.env['CRYPTO'], "library 'crypto' not found")
   conf.env['CAFFE'] = conf.check(lib='caffe', define_name='CAFFE', uselib='CAFFE',
-                                 libpath="/netdb/data2/common_software/caffe/caffe/build/lib",
-                                 includes='/netdb/data2/common_software/caffe/caffe/include', mandatory=True)
+                                 libpath="/media/sdb1/nfs/iped/rapidnet/caffe/build/lib",
+                                 includes='/media/sdb1/nfs/iped/rapidnet/caffe/include', mandatory=True)
   #conf.env.append_value('INCLUDES',['/netdb/data2/common_software/caffe/caffe/include'])
 
 def build(bld):

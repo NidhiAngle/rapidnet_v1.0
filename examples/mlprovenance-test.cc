@@ -42,7 +42,7 @@ void Print ()
 void
 UpdateTables ()
 {
-  insertimage (1,1,"/home/vnidhi/diaper.jpg");
+  insertimage (1,1,"/home/iped/nfs/diaper.jpg");
   insertrule(1,"n03188531 diaper, nappy, napkin","diaper->beer",0.45);
 }
 

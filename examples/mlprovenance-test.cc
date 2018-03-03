@@ -40,9 +40,14 @@ void Print ()
 
 // Create a chain topology
 void
-UpdateTables ()
+UpdateTables1 ()
 {
   insertimage (1,1,"/home/iped/nfs/diaper.jpg");
+}
+
+void
+UpdateTables2 ()
+{
   insertrule(1,"n03188531 diaper, nappy, napkin","diaper->beer",0.45);
 }
 
@@ -52,11 +57,13 @@ main (int argc, char *argv[])
   LogComponentEnable("Mlprovenance", LOG_LEVEL_INFO);
   LogComponentEnable("RapidNetApplicationBase", LOG_LEVEL_INFO);
 
-  apps = InitRapidNetApps (5, Create<MlprovenanceHelper> ());
+  apps = InitRapidNetApps (1, Create<MlprovenanceHelper> ());
   apps.Start (Seconds (0.0));
-  apps.Stop (Seconds (10.0));
+  apps.Stop (Seconds (11.0));
 
-  schedule (0.0, UpdateTables);
+  /* schedule (0.0, UpdateTables); */
+  schedule (1.0, UpdateTables1);
+  schedule (2.0, UpdateTables2);
   schedule (10.0, Print);
 
   Simulator::Run ();

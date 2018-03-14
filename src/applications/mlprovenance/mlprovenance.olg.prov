@@ -19,7 +19,7 @@ prov_r2_3 epIterate(@Nd, Id, N, L, RID, RLOC) :- epIterateTemp(@RLOC, Nd, Id, N,
 prov_r2_4 pIterate(@Nd, Id, N, L) :- epIterate(@Nd, Id, N, L, RID, RLOC).
 prov_r2_5 prov(@Nd, VID, RID, RLOC) :- epIterate(@Nd, Id, N, L, RID, RLOC), VID := f_sha1((((pIterate+ Nd)+ Id)+ N)+ L).
 prov_r3_1 epIterateTemp(@RLOC, Nd, Id, N, L, RID, R, List) :- pIterate(@Nd, Id, N1, L), PID1 := f_sha1((((pIterate+ Nd)+ Id)+ N1)+ L), List := f_append(PID1), N1 < f_size(L), N := N1+ 1, RLOC := Nd, R := r3, RID := f_sha1((R+ RLOC)+ List).
-prov_r4_1 epredictionTemp(@RLOC, Nd, Id, Item, Prob, RID, R, List) :- pIterate(@Nd, Id, N, L), PID1 := f_sha1((((pIterate+ Nd)+ Id)+ N)+ L), List := f_append(PID1), N <= f_size(L), AnotherL := f_item(L, N), Item := f_item(AnotherL, 1), Prob := f_item(AnotherL, 2), RLOC := Nd, R := r4, RID := f_sha1((R+ RLOC)+ List).
+prov_r4_1 epredictionTemp(@RLOC, Nd, Id, Item, Prob, RID, R, List) :- pIterate(@Nd, Id, N, L), PID1 := f_sha1((((pIterate+ Nd)+ Id)+ N)+ L), List := f_append(PID1), N <= f_size(L), AnotherList := f_item(L, N), Item := f_item(AnotherList, 1), Prob := f_item(AnotherList, 2), RLOC := Nd, R := r4, RID := f_sha1((R+ RLOC)+ List).
 prov_r4_2 ruleExec(@RLOC, RID, R, List) :- epredictionTemp(@RLOC, Nd, Id, Item, Prob, RID, R, List).
 prov_r4_3 eprediction(@Nd, Id, Item, Prob, RID, RLOC) :- epredictionTemp(@RLOC, Nd, Id, Item, Prob, RID, R, List).
 prov_r4_4 prediction(@Nd, Id, Item, Prob) :- eprediction(@Nd, Id, Item, Prob, RID, RLOC).
@@ -40,7 +40,7 @@ prov_r7_3 ecIterate(@Nd, Id, N, L, Rule, Prob, RID, RLOC) :- ecIterateTemp(@RLOC
 prov_r7_4 cIterate(@Nd, Id, N, L, Rule, Prob) :- ecIterate(@Nd, Id, N, L, Rule, Prob, RID, RLOC).
 prov_r7_5 prov(@Nd, VID, RID, RLOC) :- ecIterate(@Nd, Id, N, L, Rule, Prob, RID, RLOC), VID := f_sha1((((((cIterate+ Nd)+ Id)+ N)+ L)+ Rule)+ Prob).
 prov_r8_1 ecIterateTemp(@RLOC, Nd, Id, N, L, Rule, Prob, RID, R, List) :- cIterate(@Nd, Id, N1, L, Rule, Prob), PID1 := f_sha1((((((cIterate+ Nd)+ Id)+ N1)+ L)+ Rule)+ Prob), List := f_append(PID1), N1 < f_size(L), N := N1+ 1, RLOC := Nd, R := r8, RID := f_sha1((R+ RLOC)+ List).
-prov_r9_1 eresultTemp(@RLOC, Nd, Id, Rule, Person, Prob, RID, R, List) :- cIterate(@Nd, Id, N, L, Rule, Prob1), PID1 := f_sha1((((((cIterate+ Nd)+ Id)+ N)+ L)+ Rule)+ Prob1), List := f_append(PID1), N <= f_size(L), AnotherL := f_item(L, N), Person := f_item(AnotherL, 1), Prob2 := f_item(AnotherL, 2), Prob := Prob1* Prob2, RLOC := Nd, R := r9, RID := f_sha1((R+ RLOC)+ List).
+prov_r9_1 eresultTemp(@RLOC, Nd, Id, Rule, Person, Prob, RID, R, List) :- cIterate(@Nd, Id, N, L, Rule, Prob1), PID1 := f_sha1((((((cIterate+ Nd)+ Id)+ N)+ L)+ Rule)+ Prob1), List := f_append(PID1), N <= f_size(L), AnotherList := f_item(L, N), Person := f_item(AnotherList, 1), Prob2 := f_item(AnotherList, 2), Prob := Prob1, RLOC := Nd, R := r9, RID := f_sha1((R+ RLOC)+ List).
 prov_r9_2 ruleExec(@RLOC, RID, R, List) :- eresultTemp(@RLOC, Nd, Id, Rule, Person, Prob, RID, R, List).
 prov_r9_3 eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC) :- eresultTemp(@RLOC, Nd, Id, Rule, Person, Prob, RID, R, List).
 prov_r9_4 result(@Nd, Id, Rule, Person, Prob) :- eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC).

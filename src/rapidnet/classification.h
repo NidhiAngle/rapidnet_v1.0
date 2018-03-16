@@ -8,4 +8,3 @@ std::vector<std::pair<std::string, float> > classifyImage(int clf_id, std::strin
 
 int initClassifier(int clfid);
 
-std::pair<string, float> = classifyPerson(std::vector<std::pair<std::string> objects, float prob);

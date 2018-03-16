@@ -285,7 +285,7 @@ int initClassifier(int clfid) {
 }
 
 #define isin(v, a) std::find(v.begin(), v.end(), a) != v.end()
-
+/*
 std::pair<string, float> = classifyPerson(std::vector<std::pair<std::string> objects, float prob) {
 
     if (isin(objects, "diaper")) {
@@ -323,7 +323,7 @@ std::pair<string, float> = classifyPerson(std::vector<std::pair<std::string> obj
     }
     return std::make_pair("NONE", 1);
 }
-
+*/
 int main(int argc, char** argv) {
   if (argc != 6) {
     std::cerr << "Usage: " << argv[0]

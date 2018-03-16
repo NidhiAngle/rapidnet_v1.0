@@ -30,11 +30,13 @@
 /* wchar_t uses ISO/IEC 10646 (2nd ed., published 2011-03-15) /
    Unicode 6.0.  */
 /* We do not support C11 <threads.h>.  */
+materialize(clf,infinity,infinity,keys(1)).
 materialize(image,infinity,infinity,keys(1,2)).
 materialize(prediction,infinity,infinity,keys(1,2,3)).
 materialize(associationrule,infinity,infinity, keys(1,2,3)).
 materialize(result,infinity, infinity, keys(1,2,3,4)).
-r1 pList(@Nd,Id, L) :- image(@Nd,Id, Img), L:=f_predictimage(Img).
+r1 pClf(@Nd, Clfid, Enabled) :- clf(@Nd, Clfid), Enabled:=f_initclassifier(Clfid).
+r1 pList(@Nd,Id, L) :- image(@Nd,Id, Img), pClf(@Nd, Clfid, 1), L:=f_classifyimage(Img, Clfid).
 r2 pIterate(@Nd,Id, N, L) :- pList(@Nd,Id, L), N:=1.
 r3 pIterate(@Nd,Id, N, L) :- pIterate(@Nd,Id, N1,L), N1< f_size(L), N:=N1+1.
 r4 prediction(@Nd,Id,Item,Prob) :- pIterate(@Nd,Id, N, L), N <= f_size(L), AnotherList:=f_item(L, N), Item:=f_item(AnotherList, 1), Prob:=f_item(AnotherList,2).

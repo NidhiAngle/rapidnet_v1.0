@@ -77,8 +77,11 @@ Classifier::Classifier(const string& model_file,
   std::ifstream labels(label_file.c_str());
   CHECK(labels) << "Unable to open labels file " << label_file;
   string line;
-  while (std::getline(labels, line))
-    labels_.push_back(string(line));
+  while (std::getline(labels, line)) {
+      string strline = string(line);
+      string startstr = strline.substr(10);
+      labels_.push_back(startstr.substr(0, startstr.find_first_of(",")));
+  }
 
   Blob<float>* output_layer = net_->output_blobs()[0];
   CHECK_EQ(labels_.size(), output_layer->channels())
@@ -228,6 +231,8 @@ void Classifier::Preprocess(const cv::Mat& img,
     << "Input channels are not wrapping the input layer of the network.";
 }
 
+static map<int, Classifier*> clf_map;
+
 std::vector<std::pair<string, float> > getPrediction(string file){
   //::google::InitGoogleLogging("./build/examples/cpp_classification/classification.bin");
 
@@ -255,8 +260,28 @@ std::vector<std::pair<string, float> > getPrediction(string file){
 
   }
   return toReturn;
+}
 
+std::vector<std::pair<string, float> > classifyImage(int clf_id, string img_file) {
+  cv::Mat img = cv::imread(img_file, -1);
+  CHECK(!img.empty()) << "Unable to decode image " << img_file;
+  std::vector<Prediction> predictions = clf_map[clf_id]->Classify(img);
+  std::vector<std::pair<string, float> > toReturn;
 
+  for (size_t i = 0; i < predictions.size(); ++i) {
+    toReturn.push_back(std::make_pair(predictions[i].first, predictions[i].second));
+  }
+  return toReturn;
+}
+
+int initClassifier(int clfid) {
+  string model_file   = "/media/sdb1/nfs/shared/caffe/models/bvlc_reference_caffenet/deploy.prototxt";
+  string trained_file = "/media/sdb1/nfs/shared/caffe/models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel";
+  string mean_file    = "/media/sdb1/nfs/shared/caffe/data/ilsvrc12/imagenet_mean.binaryproto";
+  string label_file   = "/media/sdb1/nfs/shared/caffe/data/ilsvrc12/synset_words.txt";
+
+  clf_map[clfid] = new Classifier(model_file, trained_file, mean_file, label_file);
+  return 1;
 }
 
 int main(int argc, char** argv) {

@@ -46,6 +46,50 @@ FAppend::New (Ptr<Expression> source)
   return retval;
 }
 
+Ptr<FunctionExpr>
+FClassifyImage::New (Ptr<Expression> imgf, Ptr<Expression> clfidx)
+{
+  Ptr<FClassifyImage> retval = Create<FClassifyImage> ();
+  retval->str = imgf;
+  retval->clf_id = clfidx;
+  return retval;
+}
+
+Ptr<Value>
+FClassifyImage::Eval (Ptr<Tuple> tuple)
+{
+  string file = str->Eval(tuple)->ToString();
+  uint32_t id = rn_int32 (clf_id->Eval (tuple));
+
+  std::vector<std::pair<string, float> > predictions = classifyImage(id, file);
+
+  list<Ptr<Value> > result;
+  for (size_t i = 0; i < predictions.size(); ++i) {
+    list<Ptr<Value> > temp;
+    temp.push_back(StrValue::New(predictions[i].first));
+    temp.push_back(RealValue::New(predictions[i].second));
+    result.push_back(ListValue::New(temp));
+  }
+  return ListValue::New(result);
+}
+
+Ptr<Value>
+FInitClassifier::Eval (Ptr<Tuple> tuple)
+{
+  uint32_t id = rn_int32(clfid->Eval(tuple));
+  int success = initClassifier(id);
+  return Int32Value::New(success);
+}
+
+Ptr<FunctionExpr>
+FInitClassifier::New (Ptr<Expression> clfid)
+{
+  Ptr<FInitClassifier> retval = Create<FInitClassifier> ();
+  retval->clfid = clfid;
+  return retval;
+}
+
+
 Ptr<Value>
 FPredictImage::Eval(Ptr<Tuple> tuple)
 {
@@ -59,9 +103,8 @@ FPredictImage::Eval(Ptr<Tuple> tuple)
     result.push_back(ListValue::New(temp));
   }
   return ListValue::New(result);
-
-
 }
+
 
 Ptr<FunctionExpr>
 FPredictImage::New (Ptr<Expression> string)
@@ -84,10 +127,7 @@ FClassify::Eval(Ptr<Tuple> tuple)
     result.push_back(ListValue::New(temp));
   }
   return ListValue::New(result);
-
-
 }
-
 
 Ptr<FunctionExpr>
 FClassify::New (Ptr<Expression> string)

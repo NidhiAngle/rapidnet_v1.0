@@ -5,6 +5,11 @@
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
 
+#define clf(node,id) \
+  tuple (Mlprovenance::CLF, \
+    attr ("clf_attr1", Ipv4Value, node),\
+    attr ("clf_attr2", Int32Value, id))
+
 #define image(node,id, img) \
   tuple (Mlprovenance::IMAGE, \
     attr ("image_attr1", Ipv4Value, node),\
@@ -17,6 +22,9 @@
     attr ("associationrule_attr2", StrValue, item),\
     attr ("associationrule_attr3", StrValue, rule),\
     attr ("associationrule_attr4", RealValue, probability))
+
+#define insertclf(node, id) \
+  app(node)->Insert (clf (addr(node), id))
 
 #define insertimage(node,id, img) \
   app(node)->Insert (image (addr(node),id, img));
@@ -42,13 +50,14 @@ void Print ()
 void
 UpdateTables1 ()
 {
+  insertclf(1, 1);
   insertimage (1,1,"/home/iped/nfs/diaper.jpg");
 }
 
 void
 UpdateTables2 ()
 {
-  insertrule(1,"n03188531 diaper, nappy, napkin","diaper->beer",0.45);
+  insertrule(1,"diaper","diaper->beer",0.45);
 }
 
 int

@@ -1,4 +1,5 @@
 materialize(associationrule, -1, 0, keys(1, 2, 3)
+materialize(clf, -1, 0, keys(1)
 materialize(image, -1, 0, keys(1, 2)
 materialize(pQList, -1, 0, keys(1, 2)
 materialize(pResultTmp, -1, 0, keys(1, 2)
@@ -8,7 +9,12 @@ materialize(rQList, -1, 0, keys(1, 2)
 materialize(rResultTmp, -1, 0, keys(1, 2)
 materialize(result, -1, 0, keys(1, 2, 3, 4)
 materialize(ruleExec, -1, 0, keys(1, 2)
-prov_r1_1 epListTemp(@RLOC, Nd, Id, L, RID, R, List) :- image(@Nd, Id, Img), PID1 := f_sha1(((image+ Nd)+ Id)+ Img), List := f_append(PID1), L := f_predictimage(Img), RLOC := Nd, R := r1, RID := f_sha1((R+ RLOC)+ List).
+prov_r1_1 epClfTemp(@RLOC, Nd, Clfid, Enabled, RID, R, List) :- clf(@Nd, Clfid), PID1 := f_sha1((clf+ Nd)+ Clfid), List := f_append(PID1), Enabled := f_initclassifier(Clfid), RLOC := Nd, R := r1, RID := f_sha1((R+ RLOC)+ List).
+prov_r1_2 ruleExec(@RLOC, RID, R, List) :- epClfTemp(@RLOC, Nd, Clfid, Enabled, RID, R, List).
+prov_r1_3 epClf(@Nd, Clfid, Enabled, RID, RLOC) :- epClfTemp(@RLOC, Nd, Clfid, Enabled, RID, R, List).
+prov_r1_4 pClf(@Nd, Clfid, Enabled) :- epClf(@Nd, Clfid, Enabled, RID, RLOC).
+prov_r1_5 prov(@Nd, VID, RID, RLOC) :- epClf(@Nd, Clfid, Enabled, RID, RLOC), VID := f_sha1(((pClf+ Nd)+ Clfid)+ Enabled).
+prov_r1_1 epListTemp(@RLOC, Nd, Id, L, RID, R, List) :- image(@Nd, Id, Img), PID1 := f_sha1(((image+ Nd)+ Id)+ Img), List := f_append(PID1), pClf(@Nd, Clfid, 1), PID2 := f_sha1(((pClf+ Nd)+ Clfid)+ 1), List2 := f_append(PID2), List := f_concat(List, List2), L := f_classifyimage(Img, Clfid), RLOC := Nd, R := r1, RID := f_sha1((R+ RLOC)+ List).
 prov_r1_2 ruleExec(@RLOC, RID, R, List) :- epListTemp(@RLOC, Nd, Id, L, RID, R, List).
 prov_r1_3 epList(@Nd, Id, L, RID, RLOC) :- epListTemp(@RLOC, Nd, Id, L, RID, R, List).
 prov_r1_4 pList(@Nd, Id, L) :- epList(@Nd, Id, L, RID, RLOC).
@@ -46,7 +52,8 @@ prov_r9_3 eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC) :- eresultTemp(@RLOC, 
 prov_r9_4 result(@Nd, Id, Rule, Person, Prob) :- eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC).
 prov_r9_5 prov(@Nd, VID, RID, RLOC) :- eresult(@Nd, Id, Rule, Person, Prob, RID, RLOC), VID := f_sha1(((((result+ Nd)+ Id)+ Rule)+ Person)+ Prob).
 prov_edb_1 prov(@Nd, VID, RID, $1) :- $1 := Nd, associationrule(@Nd, Item, Rule, Prob1), VID := f_sha1((((associationrule+ Nd)+ Item)+ Rule)+ Prob1), RID := VID.
-prov_edb_2 prov(@Nd, VID, RID, $1) :- $1 := Nd, image(@Nd, Id, Img), VID := f_sha1(((image+ Nd)+ Id)+ Img), RID := VID.
+prov_edb_2 prov(@Nd, VID, RID, $1) :- $1 := Nd, clf(@Nd, Clfid), VID := f_sha1((clf+ Nd)+ Clfid), RID := VID.
+prov_edb_3 prov(@Nd, VID, RID, $1) :- $1 := Nd, image(@Nd, Id, Img), VID := f_sha1(((image+ Nd)+ Id)+ Img), RID := VID.
 edb1 pReturn(@Ret, QID, VID, Prov) :- provQuery(@X, QID, VID, Ret), prov(@X, VID, RID, RLoc), RID == VID, Prov := f_pEDB(VID, X).
 idb1 pQList(@X, QID, LIST< RID >) :- provQuery(@X, QID, VID, Ret), prov(@X, VID, RID, RLoc), RID != VID.
 idb2 pResultTmp(@X, QID, Ret, VID, Buf) :- provQuery(@X, QID, VID, Ret), Buf := f_empty().

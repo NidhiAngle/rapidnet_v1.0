@@ -284,6 +284,46 @@ int initClassifier(int clfid) {
   return 1;
 }
 
+#define isin(v, a) std::find(v.begin(), v.end(), a) != v.end()
+
+std::pair<string, float> = classifyPerson(std::vector<std::pair<std::string> objects, float prob) {
+
+    if (isin(objects, "diaper")) {
+        if (!isin(objects, "beer")) {
+            return std::make_pair("father", 1);
+        } else {
+            if (isin(objects, "flour")) {
+                return std::make_pair("C", prob / 2);
+            } else {
+                return std::make_pair("A", prob / 1.5);
+            }
+        }
+    } else {
+        if (!isin(objects, "bread")) {
+            return std::make_pair("C", prob / 1.1);
+        } else {
+            if (!isin(objects, "cereal")) {
+                return std::make_pair("E", prob);
+            } else {
+                if (!isin(objects, "rice")) {
+                    return std::make_pair("A", prob);
+                } else {
+                    if (isin(objects, "tea")) {
+                        return std::make_pair("E", prob);
+                    } else {
+                        if isin(objects, "coffee") {
+                            return std::make_pair("E", prob);
+                        } else {
+                            return std::make_pair("A", prob / 4);
+                        }
+                    }
+                }
+            }
+        }
+    }
+    return std::make_pair("NONE", 1);
+}
+
 int main(int argc, char** argv) {
   if (argc != 6) {
     std::cerr << "Usage: " << argv[0]

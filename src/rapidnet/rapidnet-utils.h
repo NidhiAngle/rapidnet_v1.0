@@ -32,7 +32,7 @@
 #define attrdeftype pair<string, ValueTypeId>
 #define attrdef(name, type) attrdeftype (name, type)
 #define attrdeflist MakeList<attrdeftype>
-
+#define listattrdef(value,type) type::New (value)
 #define attr(name, type, value) \
   TupleAttribute::New (name, type::New (value))
 #define attrlist MakeList<Ptr<TupleAttribute> >

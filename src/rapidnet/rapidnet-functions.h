@@ -58,16 +58,61 @@ protected:
 class FPredictImage : public FunctionExpr
 {
 public:
- 
+
   virtual ~FPredictImage () {}
 
   virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
 
   static Ptr<FunctionExpr> New (Ptr<Expression> string);
 
-  protected:
+protected:
 
-  Ptr<Expression> str;
+  Ptr<Expression> str, clf_id;
+};
+
+class FInitClassifier : public FunctionExpr
+{
+public:
+
+ virtual ~FInitClassifier () {}
+
+ virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+ static Ptr<FunctionExpr> New (Ptr<Expression> clfid);
+
+protected:
+
+  Ptr<Expression> clfid;
+
+};
+
+class FClassifyPerson : public FunctionExpr
+{
+public:
+  virtual ~FClassifyPerson () {}
+
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+  static Ptr<FunctionExpr> New (Ptr<Expression> pattern);
+
+protected:
+  Ptr<Expression> m_pattern;
+};
+
+
+class FClassifyImage : public FunctionExpr
+{
+public:
+
+  virtual ~FClassifyImage () {}
+
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+  static Ptr<FunctionExpr> New (Ptr<Expression> imgf, Ptr<Expression> clfid);
+
+protected:
+
+  Ptr<Expression> str, clf_id;
 };
 
 class FClassify : public FunctionExpr
@@ -84,7 +129,7 @@ public:
 
   Ptr<Expression> str;
 };
- 
+
 class FEmpty : public FunctionExpr
 {
 public:

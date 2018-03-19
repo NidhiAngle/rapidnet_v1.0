@@ -845,6 +845,18 @@ LookupFunction (string functionName)
     {
       return "FClassify";
     }
+  else if(functionName == "f_initclassifier")
+    {
+      return "FInitClassifier";
+    }
+  else if(functionName == "f_classifyimage")
+    {
+      return "FClassifyImage";
+    }
+  else if(functionName == "f_classifyPerson")
+    {
+      return "FClassifyPerson";
+    }
   // no functions found, return error
   else
     {

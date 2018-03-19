@@ -77,8 +77,11 @@ Classifier::Classifier(const string& model_file,
   std::ifstream labels(label_file.c_str());
   CHECK(labels) << "Unable to open labels file " << label_file;
   string line;
-  while (std::getline(labels, line))
-    labels_.push_back(string(line));
+  while (std::getline(labels, line)) {
+      string strline = string(line);
+      string startstr = strline.substr(10);
+      labels_.push_back(startstr.substr(0, startstr.find_first_of(",")));
+  }
 
   Blob<float>* output_layer = net_->output_blobs()[0];
   CHECK_EQ(labels_.size(), output_layer->channels())
@@ -228,6 +231,8 @@ void Classifier::Preprocess(const cv::Mat& img,
     << "Input channels are not wrapping the input layer of the network.";
 }
 
+static map<int, Classifier*> clf_map;
+
 std::vector<std::pair<string, float> > getPrediction(string file){
   //::google::InitGoogleLogging("./build/examples/cpp_classification/classification.bin");
 
@@ -255,8 +260,103 @@ std::vector<std::pair<string, float> > getPrediction(string file){
 
   }
   return toReturn;
+}
+
+std::vector<std::pair<string, float> > classifyImage(int clf_id, string img_file) {
+  cv::Mat img = cv::imread(img_file, -1);
+  CHECK(!img.empty()) << "Unable to decode image " << img_file;
+  std::vector<Prediction> predictions = clf_map[clf_id]->Classify(img);
+  std::vector<std::pair<string, float> > toReturn;
+
+  for (size_t i = 0; i < predictions.size(); ++i) {
+    std::cout << predictions[i].first << predictions[i].second << std::endl;
+    toReturn.push_back(std::make_pair(predictions[i].first, predictions[i].second));
+  }
+  return toReturn;
+}
+
+int initClassifier(int clfid) {
+  string model_file   = "/media/sdb1/nfs/shared/caffe/models/bvlc_reference_caffenet/deploy.prototxt";
+  string trained_file = "/media/sdb1/nfs/shared/caffe/models/bvlc_reference_caffenet/bvlc_reference_caffenet.caffemodel";
+  string mean_file    = "/media/sdb1/nfs/shared/caffe/data/ilsvrc12/imagenet_mean.binaryproto";
+  string label_file   = "/media/sdb1/nfs/shared/caffe/data/ilsvrc12/synset_words.txt";
+
+  clf_map[clfid] = new Classifier(model_file, trained_file, mean_file, label_file);
+  return 1;
+}
+
+#define ARRBOUNDS(A) A, A + sizeof(A) / sizeof(*A)
+
+#define BRACEIZE(...) { __VA_ARGS__}
+
+#define DEF1CLASS(name, items) \
+    std::string name ##l[] = BRACEIZE items; \
+    std::set<std::string> name ##s(ARRBOUNDS(name ##l)); \
+    std::set<std::string> name ##sl[] = {name ##s}; \
+    std::vector<std::set<std::string> > name ##a (ARRBOUNDS(name ##sl)); \
+    std::pair<std::string, std::vector<std::set<std::string> > > name = std::make_pair( #name, name ##a);
+
+#define DEF2CLASS(name, items1, items2) \
+    std::string name ##l1[] = BRACEIZE items1; \
+    std::set<std::string> name ##s1(ARRBOUNDS(name ##l1)); \
+    std::string name ##l2[] = BRACEIZE items2; \
+    std::set<std::string> name ##s2(ARRBOUNDS(name ##l2)); \
+    std::set<std::string> name ##sl[] = {name ##s1, name ##s2}; \
+    std::vector<std::set<std::string> > name ##a (ARRBOUNDS(name ##sl)); \
+    std::pair<std::string, std::vector<std::set<std::string> > > name = std::make_pair( #name, name ##a);
+
+DEF1CLASS(father,("diaper", "beer"))
 
 
+DEF2CLASS(cls0,("sock","pillow","paintbrush","barbell"),("pillow","barbell","paintbrush"))
+
+DEF1CLASS(cls1,("espresso","dumbbell","sock","diaper"))
+
+DEF2CLASS(cls2,("dumbbell","mitten","teapot","pillow"),("mitten","dumbbell","teapot"))
+
+DEF2CLASS(cls3,("llama","pillow","tractor"),("llama","espresso","pillow","dumbbell"))
+
+DEF1CLASS(cls4,("diaper","llama","mitten"))
+
+DEF2CLASS(cls5,("cup","dumbbell","diaper"),("diaper","cup"))
+
+DEF2CLASS(cls6,("paintbrush","barbell","espresso","mitten"),("barbell","paintbrush","mitten"))
+
+DEF1CLASS(cls7,("tractor","barbell","cup","paintbrush"))
+
+DEF2CLASS(cls8,("teapot","mitten","dumbbell","barbell"),("cup","diaper","mitten","dumbbell","teapot"))
+
+DEF2CLASS(cls9,("llama","paintbrush","teapot","sock"),("llama","teapot","tractor","sock","paintbrush"))
+
+DEF1CLASS(cls10,("barbell","diaper","espresso","pillow"))
+
+DEF2CLASS(cls11,("pillow","espresso","llama","mitten"),("llama","mitten","pillow"))
+
+std::pair<std::string, std::vector<std::set<std::string> > > classes[] = {
+    father, cls0, cls1, cls2, cls3, cls4, cls5, cls6, cls7, cls8, cls9, cls10
+};
+
+std::vector<string> classifyPerson(std::vector<std::string> list) {
+    std::vector<string> clfs;
+
+    for (size_t j = 0; j < sizeof(classes) / sizeof(*classes); j++) {
+        std::pair<std::string, std::vector<std::set<std::string> > > &cls = classes[j];
+        for (size_t k = 0; k < cls.second.size(); ++k) {
+            std::set<std::string> &items = cls.second[k];
+            bool all_in = true;
+            for (std::set<std::string>::iterator it = items.begin(); it != items.end(); it++) {
+                if (std::find(list.begin(), list.end(), *it) == list.end()) {
+                    all_in = false;
+                    break;
+                }
+            }
+            if (all_in) {
+                clfs.push_back(classes[j].first);
+                break;
+            }
+        }
+    }
+    return clfs;
 }
 
 int main(int argc, char** argv) {

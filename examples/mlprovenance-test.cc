@@ -4,6 +4,9 @@
 #include "ns3/mlprovenance-module.h"
 #include "ns3/rapidnet-module.h"
 #include "ns3/values-module.h"
+#include <fstream>
+#include <list>
+#include <string>
 
 #define clf(node,id) \
   tuple (Mlprovenance::CLF, \
@@ -11,16 +14,16 @@
     attr ("clf_attr2", Int32Value, id))
 
 #define image(node,id, img) \
-  tuple (Mlprovenance::IMAGE, \
+  ns3::rapidnet::tuple (Mlprovenance::IMAGE, \
     attr ("image_attr1", Ipv4Value, node),\
     attr ("image_attr2", Int32Value, id), \
     attr ("image_attr3", StrValue, img))
 
 #define associationrule(node, item, rule, probability)\
-  tuple (Mlprovenance::ASSOCIATIONRULE, \
+  ns3::rapidnet::tuple (Mlprovenance::ASSOCIATIONRULE, \
     attr ("associationrule_attr1", Ipv4Value, node),\
     attr ("associationrule_attr2", StrValue, item),\
-    attr ("associationrule_attr3", StrValue, rule),\
+    attr ("associationrule_attr3", ListValue, rule),\
     attr ("associationrule_attr4", RealValue, probability))
 
 #define insertclf(node, id) \
@@ -57,7 +60,22 @@ UpdateTables1 ()
 void
 UpdateTables2 ()
 {
-  insertrule(1,"diaper","diaper->beer",0.45);
+  ifstream myfile;
+  myfile.open("association_rule_for_mlprovenance/association_rules.csv");
+  string store;
+  while(getline(myfile,store,',')){
+    list<Ptr<Value> > rule;
+    string itemlhs;
+    int num_items = stoi(store);
+    for(int x=0;x<num_items;x++){
+      getline(myfile,store,',');
+      rule.push_back(listattrdef(store,StrValue));
+      if(x==0) itemlhs=store;
+    }
+    getline(myfile,store);
+    float prob = stof(store);
+    insertrule(1,itemlhs,rule,prob);
+ }
 }
 
 int

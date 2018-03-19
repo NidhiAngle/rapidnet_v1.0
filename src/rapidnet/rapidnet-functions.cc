@@ -46,6 +46,35 @@ FAppend::New (Ptr<Expression> source)
   return retval;
 }
 
+Ptr<Value>
+FClassifyPerson::Eval (Ptr<Tuple> tuple)
+{
+  list<Ptr<Value> > lst = rn_list (m_pattern->Eval(tuple));
+  std::vector<std::string> input;
+  for (rn_list_iterator it = lst.begin (); it != lst.end (); it++) {
+    input.push_back((*it)->ToString());
+  }
+  vector<string> classification = classifyPerson(input);
+
+  list<Ptr<Value> > result;
+  for (size_t i = 0; i < classification.size(); ++i) {
+      list<Ptr<Value> > temp;
+      temp.push_back(StrValue::New(classification[i]));
+      temp.push_back(RealValue::New(1));
+      result.push_back(ListValue::New(temp));
+  }
+  return ListValue::New(result);
+}
+
+Ptr<FunctionExpr>
+FClassifyPerson::New (Ptr<Expression> pattern)
+{
+    Ptr<FClassifyPerson> retval = Create<FClassifyPerson> ();
+    retval->m_pattern = pattern;
+    return retval;
+}
+
+
 Ptr<FunctionExpr>
 FClassifyImage::New (Ptr<Expression> imgf, Ptr<Expression> clfidx)
 {

@@ -86,6 +86,20 @@ protected:
 
 };
 
+class FClassifyPerson : public FunctionExpr
+{
+public:
+  virtual ~FClassifyPerson () {}
+
+  virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
+
+  static Ptr<FunctionExpr> New (Ptr<Expression> pattern);
+
+protected:
+  Ptr<Expression> m_pattern;
+};
+
+
 class FClassifyImage : public FunctionExpr
 {
 public:
@@ -94,7 +108,7 @@ public:
 
   virtual Ptr<Value> Eval (Ptr<Tuple> tuple);
 
-  static Ptr<FunctionExpr> New (Ptr<Expression> imgf, Ptr<Expression> clfidx);
+  static Ptr<FunctionExpr> New (Ptr<Expression> imgf, Ptr<Expression> clfid);
 
 protected:
 

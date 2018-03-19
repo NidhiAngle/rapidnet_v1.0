@@ -853,6 +853,10 @@ LookupFunction (string functionName)
     {
       return "FClassifyImage";
     }
+  else if(functionName == "f_classifyPerson")
+    {
+      return "FClassifyPerson";
+    }
   // no functions found, return error
   else
     {

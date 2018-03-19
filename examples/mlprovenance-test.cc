@@ -9,7 +9,7 @@
 #include <string>
 
 #define clf(node,id) \
-  tuple (Mlprovenance::CLF, \
+  ns3::rapidnet::tuple (Mlprovenance::CLF, \
     attr ("clf_attr1", Ipv4Value, node),\
     attr ("clf_attr2", Int32Value, id))
 
@@ -46,6 +46,7 @@ void Print ()
 {
   PrintRelation (apps, Mlprovenance::IMAGE);
   PrintRelation (apps, Mlprovenance::PREDICTION);
+  PrintRelation (apps, Mlprovenance::IDENTIFIEDPATTERN);
   PrintRelation (apps, Mlprovenance::RESULT);
 }
 
@@ -54,14 +55,13 @@ void
 UpdateTables1 ()
 {
   insertclf(1, 1);
-  insertimage (1,1,"/home/iped/nfs/diaper.jpg");
 }
 
 void
 UpdateTables2 ()
 {
   ifstream myfile;
-  myfile.open("association_rule_for_mlprovenance/association_rules.csv");
+  myfile.open("examples/association_rule_for_mlprovenance/association_rules.csv");
   string store;
   while(getline(myfile,store,',')){
     list<Ptr<Value> > rule;
@@ -78,6 +78,29 @@ UpdateTables2 ()
  }
 }
 
+static string image_names[] = {
+    "cup.jpg",
+    "dumbbell.jpeg",
+    "barbell.png",
+    "espresso.jpg",
+    "llama.jpg",
+    "mitten.jpeg",
+    "paintbrush.png",
+    "pillow.jpeg",
+    "sock.jpeg",
+    "teapot.jpg",
+    "tractor.jpg",
+    "diaper.jpg"
+};
+
+static int inserted_i = 0;
+
+void insertNextImage()
+{
+  insertimage(1, inserted_i + 1, "/home/iped/nfs/rapidnet/images/" + image_names[inserted_i]);
+  inserted_i++;
+}
+
 int
 main (int argc, char *argv[])
 {
@@ -86,12 +109,17 @@ main (int argc, char *argv[])
 
   apps = InitRapidNetApps (1, Create<MlprovenanceHelper> ());
   apps.Start (Seconds (0.0));
-  apps.Stop (Seconds (11.0));
+  apps.Stop (Seconds (2000.0));
 
   /* schedule (0.0, UpdateTables); */
   schedule (1.0, UpdateTables1);
   schedule (2.0, UpdateTables2);
-  schedule (10.0, Print);
+
+  for (int i=0; i < sizeof(image_names) / sizeof(*image_names); i++) {
+      schedule(10.0 * i, insertNextImage);
+  }
+
+  schedule (1000.0, Print);
 
   Simulator::Run ();
   Simulator::Destroy ();

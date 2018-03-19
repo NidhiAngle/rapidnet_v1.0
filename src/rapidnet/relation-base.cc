@@ -18,7 +18,6 @@
  */
 #include "relation-base.h"
 #include "temp-relation.h"
-#include "stdio.h"
 
 using namespace std;
 using namespace ns3;
@@ -31,6 +30,11 @@ RelationBase::GetTypeId (void)
     .SetParent<Object> ()
   ;
   return tid;
+}
+
+RelationBase::RelationBase ()
+{
+  m_name = "no-name";
 }
 
 RelationBase::RelationBase (string name)
@@ -95,9 +99,7 @@ RelationBase::Select (Ptr<Selector> selector)
     {
       if (selector->Select (*it))
         {
-            result->Insert (*it);
-          //Performance Tuning
-          //result->Insert (CopyObject<Tuple> (*it));
+          result->Insert (CopyObject<Tuple> (*it));
         }
     }
   return result;
@@ -105,16 +107,13 @@ RelationBase::Select (Ptr<Selector> selector)
 
 Ptr<RelationBase>
 RelationBase::Join (Ptr<Tuple> rTuple, list<string> lAttrNames,
-  list<string> rAttrNames, bool qualify, uint32_t joinNum, bool preserveAttrs)
+  list<string> rAttrNames, bool qualify)
 {
   Ptr<RelationBase> retval = TempRelation::New (JOIN_NAMES (
     GetName (), rTuple->GetName ())) ;
-
   list<Ptr<TupleAttribute> > rAttrs = _GetAttributesAsList (
     rTuple, rAttrNames);
-  
-  list<Ptr<Tuple> > result = _DoJoin (lAttrNames, rTuple, rAttrs, qualify, joinNum, preserveAttrs);
-  //retval->PrintAllTuples(std::cout);
+  list<Ptr<Tuple> > result = _DoJoin (lAttrNames, rTuple, rAttrs, qualify);
   retval->InsertAll (result);
   return retval;
 }
@@ -144,7 +143,7 @@ RelationBase::_GetAttributesAsList (Ptr<Tuple> tuple, list<string> attrNames)
  */
 list<Ptr<Tuple> >
 RelationBase::_DoJoin (list<string> lAttrNames, Ptr<Tuple> rTuple,
-  list<Ptr<TupleAttribute> > rAttrs, bool qualify, uint32_t joinNum, bool preserveAttrs)
+  list<Ptr<TupleAttribute> > rAttrs, bool qualify)
 {
   list<Ptr<Tuple> > retval;
   list<Ptr<Tuple> > lTuples = GetAllTuples ();
@@ -158,46 +157,12 @@ RelationBase::_DoJoin (list<string> lAttrNames, Ptr<Tuple> rTuple,
         {
           tempTuple = Tuple::New (JOIN_NAMES (lTuple->GetName (),
             rTuple-> GetName ()));
-          if (preserveAttrs)
-          {
-            PreserveJoinAttributes (lTuple, tempTuple, joinNum);
-            PreserveJoinAttributes (rTuple, tempTuple, joinNum);
-          }
           tempTuple->AddAllAttributes (lTuple, qualify);
           tempTuple->AddAllAttributes (rTuple, qualify);
-          //tempTuple->OverwriteAllAttributes (lTuple, qualify);
-          //tempTuple->OverwriteAllAttributes (rTuple, qualify);
           retval.push_back (tempTuple);
         }
     }
   return retval;
-}
-
-void
-RelationBase::PreserveJoinAttributes (Ptr<Tuple> src, Ptr<Tuple> dest, uint32_t joinNum)
-{
-  //Preserve other tuples based on joinNum
-  map<string, Ptr<TupleAttribute> > allAttrs = src->GetAllAttributes();
-  map<string, Ptr<TupleAttribute> >::iterator iter;
-  for (iter = allAttrs.begin(); iter != allAttrs.end(); iter++)
-  {
-    //vector<string> tokens;
-    string name = iter->second->GetName();
-    //Tokenize(name, tokens, ":");
-    stringstream ss;
-    //if (tokens.size() == 1)
-    if (name.find(":") == string::npos)
-    {
-      ss << name << ":" << joinNum;
-      string cloneName = ss.str();
-      Ptr<TupleAttribute> clone = TupleAttribute::New(cloneName, CopyObject<TupleAttribute>(iter->second));
-      // Warning: Do not overwrite here. We might get same tuples back from result being input to next Join. Use the first value we preserve.
-      if (!dest->HasAttribute(cloneName))
-      {
-        dest->AddAttribute (clone);
-      }
-    }
-  }
 }
 
 /**
@@ -228,7 +193,7 @@ RelationBase::_IsMatch (Ptr<Tuple> lTuple, list<string> lAttrNames,
 
 Ptr<RelationBase>
 RelationBase::Join (Ptr<RelationBase> reln, list<string> lAttrNames,
-  list<string> rAttrNames, bool qualify, uint32_t joinNum, bool preserveAttrs)
+  list<string> rAttrNames, bool qualify)
 {
   Ptr<RelationBase> retval = TempRelation::New (JOIN_NAMES (
     GetName (), reln->GetName ()));
@@ -240,7 +205,7 @@ RelationBase::Join (Ptr<RelationBase> reln, list<string> lAttrNames,
   for (it = rTuples.begin (); it != rTuples.end (); ++it)
     {
       rAttrs = _GetAttributesAsList (*it, rAttrNames);
-      result = _DoJoin (lAttrNames, *it, rAttrs, qualify, joinNum, preserveAttrs);
+      result = _DoJoin (lAttrNames, *it, rAttrs, qualify);
       retval->InsertAll (result);
     }
 
@@ -257,27 +222,6 @@ RelationBase::Assign (Ptr<Assignor> assignor)
     {
       assignor->Assign (*it);
     }
-}
-
-void 
-RelationBase::Tokenize(const std::string& str,
-    std::vector<std::string>& tokens,
-    const std::string& delimiters)
-{
-  // Skip delimiters at beginning.
-  std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-  // Find first "non-delimiter".
-  std::string::size_type pos = str.find_first_of(delimiters, lastPos);
-
-  while (std::string::npos != pos || std::string::npos != lastPos)
-  {
-    // Found a token, add it to the vector.
-    tokens.push_back(str.substr(lastPos, pos - lastPos));
-    // Skip delimiters.  Note the "not_of"
-    lastPos = str.find_first_not_of(delimiters, pos);
-    // Find next "non-delimiter"
-    pos = str.find_first_of(delimiters, lastPos);
-  }
 }
 
 BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::RelationBase)

@@ -48,7 +48,6 @@
 #include <errno.h>
 #include <limits>
 #include <stdlib.h>
-#include <unistd.h>
 
 NS_LOG_COMPONENT_DEFINE ("EmuNetDevice");
 

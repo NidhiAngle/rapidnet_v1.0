@@ -41,7 +41,7 @@
 #include <errno.h>
 #include <limits>
 #include <stdlib.h>
-#include <unistd.h>
+
 //
 // Sometimes having a tap-creator is actually more trouble than solution.  In 
 // these cases you can uncomment the define of TAP_CREATOR below and the 

@@ -27,7 +27,6 @@
 #include "ns3/ptr.h"
 #include "ns3/tag.h"
 #include "ns3/object.h"
-#include "ns3/net-device.h"
 #include "address.h"
 #include <stdint.h>
 
@@ -104,8 +103,6 @@ public:
    */
   virtual Ptr<Node> GetNode (void) const = 0;
   /**
-   * \brief Specify callbacks to allow the caller to determine if
-   * the connection succeeds of fails.
    * \param connectionSucceeded this callback is invoked when the 
    *        connection request initiated by the user is successfully 
    *        completed. The callback is passed  back a pointer to 
@@ -118,23 +115,6 @@ public:
   void SetConnectCallback (Callback<void, Ptr<Socket> > connectionSucceeded,
                            Callback<void,  Ptr<Socket> > connectionFailed);
  /**
-  * \brief Detect socket recv() events such as graceful shutdown or error.
-  * 
-  * For connection-oriented sockets, the first callback is used to signal
-  * that the remote side has gracefully shut down the connection, and the
-  * second callback denotes an error corresponding to cases in which
-  * a traditional recv() socket call might return -1 (error), such 
-  * as a connection reset.  For datagram sockets, these callbacks may
-  * never be invoked.
-  * 
-  * \param normalClose this callback is invoked when the 
-  *        peer closes the connection gracefully
-  * \param errorClose this callback is invoked when the 
-  *        connection closes abnormally
-  */
-  void SetCloseCallbacks (Callback<void, Ptr<Socket> > normalClose,
-                          Callback<void, Ptr<Socket> > errorClose);
-  /**
    * \brief Accept connection requests from remote hosts
    * \param connectionRequest Callback for connection request from peer. 
    *        This user callback is passed a pointer to this socket, the 
@@ -204,7 +184,6 @@ public:
 
   /** 
    * \brief Close a socket.
-   * \returns zero on success, -1 on failure.
    *
    * After the Close call, the socket is no longer valid, and cannot
    * safely be used for subsequent operations.
@@ -508,60 +487,22 @@ public:
   int RecvFrom (uint8_t* buf, uint32_t size, uint32_t flags,
                 Address &fromAddress);
   /**
-   * \param address the address name this socket is associated with.
-   * \returns 0 if success, -1 otherwise
+   * \returns the address name  this socket is associated with.
    */
   virtual int GetSockName (Address &address) const = 0; 
-
-  /**
-   * \brief Bind a socket to specific device.
-   *
-   * This method corresponds to using setsockopt() SO_BINDTODEVICE
-   * of real network or BSD sockets.   If set on a socket, this option will
-   * force packets to leave the bound device regardless of the device that
-   * IP routing would naturally choose.  In the receive direction, only
-   * packets received from the bound interface will be delivered.
-   *
-   * This option has no particular relationship to binding sockets to
-   * an address via Socket::Bind ().  It is possible to bind sockets to a 
-   * specific IP address on the bound interface by calling both 
-   * Socket::Bind (address) and Socket::BindToNetDevice (device), but it
-   * is also possible to bind to mismatching device and address, even if
-   * the socket can not receive any packets as a result.
-   *
-   * \param Netdevice Pointer to Netdevice of desired interface
-   * \returns nothing
-   */
-  virtual void BindToNetDevice (Ptr<NetDevice> netdevice);
-
-  /**
-   * \brief Returns socket's bound netdevice, if any.
-   *
-   * This method corresponds to using getsockopt() SO_BINDTODEVICE
-   * of real network or BSD sockets.  
-   * 
-   * 
-   * \returns Pointer to interface.
-   */
-  Ptr<NetDevice> GetBoundNetDevice (); 
  
 protected:
   void NotifyConnectionSucceeded (void);
   void NotifyConnectionFailed (void);
-  void NotifyNormalClose(void);
-  void NotifyErrorClose(void);
   bool NotifyConnectionRequest (const Address &from);
   void NotifyNewConnectionCreated (Ptr<Socket> socket, const Address &from);
   void NotifyDataSent (uint32_t size);
   void NotifySend (uint32_t spaceAvailable);
   void NotifyDataRecv (void);
   virtual void DoDispose (void);
-  Ptr<NetDevice> m_boundnetdevice;
 private:
-  Callback<void, Ptr<Socket> >                   m_connectionSucceeded;
-  Callback<void, Ptr<Socket> >                   m_connectionFailed;
-  Callback<void, Ptr<Socket> >                   m_normalClose;
-  Callback<void, Ptr<Socket> >                   m_errorClose;
+  Callback<void, Ptr<Socket> >   m_connectionSucceeded;
+  Callback<void, Ptr<Socket> >   m_connectionFailed;
   Callback<bool, Ptr<Socket>, const Address &>   m_connectionRequest;
   Callback<void, Ptr<Socket>, const Address&>    m_newConnectionCreated;
   Callback<void, Ptr<Socket>, uint32_t>          m_dataSent;

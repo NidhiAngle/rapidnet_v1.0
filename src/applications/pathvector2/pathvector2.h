@@ -11,13 +11,12 @@
 #include "ns3/rapidnet-header.h"
 #include "ns3/relation-base.h"
 #include "ns3/database.h"
-#include "ns3/discovery.h"
+#include "ns3/rapidnet-application-base.h"
 #include "ns3/aggregator.h"
 #include "ns3/aggwrap.h"
 
 using namespace std;
 using namespace ns3;
-using namespace ns3::rapidnet::discovery;
 
 namespace ns3 {
 
@@ -27,16 +26,15 @@ class Packet;
 namespace rapidnet {
 namespace pathvector2 {
 
-class Pathvector2 : public Discovery
+class Pathvector2 : public RapidNetApplicationBase
 {
 public:
   static const string BESTPATH;
   static const string LINK;
+  static const string LINK1;
   static const string PATH;
-  static const string PATHDELETE;
-  static const string R2LOCAL1R2LINKZSEND;
   static const string R2LOCAL2PATHSEND;
-  static const string R2LINKZ;
+  static const string R2LINK1Z;
 
   static TypeId GetTypeId (void);
 
@@ -58,25 +56,13 @@ protected:
 
   virtual void R1Eca0Ins (Ptr<Tuple> link);
 
-  virtual void R1Eca0Ref (Ptr<Tuple> link);
+  virtual void R1Eca0Del (Ptr<Tuple> link);
 
-  virtual void R2Local1Eca0RemoteIns (Ptr<Tuple> r2Local1r2linkZsend);
+  virtual void R2Local1_eca (Ptr<Tuple> link1);
 
-  virtual void R2Local1Eca0Ins (Ptr<Tuple> link);
+  virtual void R2Local2ECAMat (Ptr<Tuple> r2Local2pathsend);
 
-  virtual void R2Local1Eca0Ref (Ptr<Tuple> link);
-
-  virtual void R2Local2Eca0RemoteIns (Ptr<Tuple> r2Local2pathsend);
-
-  virtual void R2Local2Eca0RemoteDel (Ptr<Tuple> pathDelete);
-
-  virtual void R2Local2Eca0Ins (Ptr<Tuple> r2linkZ);
-
-  virtual void R2Local2Eca0Del (Ptr<Tuple> r2linkZ);
-
-  virtual void R2Local2Eca1Ins (Ptr<Tuple> bestPath);
-
-  virtual void R2Local2Eca1Del (Ptr<Tuple> bestPath);
+  virtual void R2Local2_eca (Ptr<Tuple> r2link1Z);
 
   virtual void R3eca (Ptr<Tuple> path);
 

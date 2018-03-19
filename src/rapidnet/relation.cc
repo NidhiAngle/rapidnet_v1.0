@@ -31,6 +31,13 @@ Relation::GetTypeId (void)
   return tid;
 }
 
+Relation::Relation ()
+  : RelationBase ("no-name"), m_tuples (Tuple::Less)
+{
+  m_relaxed = false;
+  m_timeToLive = Seconds (TIME_INFINITY);
+}
+
 Relation::Relation (string name)
   : RelationBase (name), m_tuples (Tuple::Less)
 {
@@ -74,6 +81,7 @@ Relation::GetTupleForKey (Ptr<Tuple> tupleKey)
 int
 Relation::Insert (Ptr<Tuple> tuple)
 {
+
   Ptr<Tuple> tupleKey = GetKey (tuple);
   tuple->SetTimestampNow ();
 
@@ -82,8 +90,7 @@ Relation::Insert (Ptr<Tuple> tuple)
       //New Key
       //Insert Case
       m_tuples [tupleKey] = tuple;
-      OnInsert.Invoke (tuple);
-      //OnInsert.Invoke (CopyObject<Tuple> (tuple));
+      OnInsert.Invoke (CopyObject<Tuple> (tuple));
       return INSERTED;
     }
   else if (m_tuples [tupleKey]->Equals (tuple))
@@ -99,17 +106,20 @@ Relation::Insert (Ptr<Tuple> tuple)
         {
           m_tuples [tupleKey]->IncRefCount ();
         }
-      OnRefresh.Invoke (m_tuples [tupleKey]);
-      //OnRefresh.Invoke (CopyObject<Tuple> (m_tuples [tupleKey]));
+      OnRefresh.Invoke (CopyObject<Tuple> (m_tuples [tupleKey]));
       return REFRESHED;
     }
   else
     {
       //Key exist - tuples don't match
+
       //Update Case
-      Delete (GetTupleForKey (tupleKey));
+      Ptr<Tuple> prev = m_tuples [tupleKey];
+      m_tuples.erase (tupleKey);
+      OnDelete.Invoke (prev);
       Insert (tuple);
       return UPDATED;
+      
     }
 }
 
@@ -125,9 +135,11 @@ Relation::Delete (Ptr<Tuple> tuple)
     }
   else
     {
-      m_tuples.erase (tupleKey);
-     // OnDelete.Invoke (CopyObject<Tuple> (tuple));
-      OnDelete.Invoke (tuple);
+      if (m_tuples [tupleKey]->DecRefCount () == 0) 
+	    {
+          m_tuples.erase (tupleKey);
+          OnDelete.Invoke (tuple);
+        }
     }
 }
 
@@ -142,12 +154,6 @@ Relation::GetAllTuples ()
       retval.push_back (it->second);
     }
   return retval;
-}
-
-void
-Relation::ClearAllTuples ()
-{
-  m_tuples.clear ();
 }
 
 uint32_t
@@ -190,7 +196,7 @@ Relation::GetKey (Ptr<Tuple> tuple)
       type = attr->GetType ();
 
       //Check for attribute type
-      NS_ASSERT_MSG (m_relaxed || type == it->second || type != ANYTYPE, "Expected type '" <<
+      NS_ASSERT_MSG (m_relaxed || type == it->second, "Expected type '" <<
         GetTypeName (it->second) << "' for key attribute '" <<
         it->first << "' but found '" << GetTypeName (type) << "'.");
 

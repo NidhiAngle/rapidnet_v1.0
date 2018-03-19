@@ -79,7 +79,9 @@ public:
     return Tuple::GetTypeId();
   }
 
-  Tuple (string name = "no-name");
+  Tuple ();
+
+  Tuple (string name);
 
   Tuple (Tuple& attrList);
 
@@ -167,13 +169,6 @@ public:
    */
   virtual void AddAllAttributes (Ptr<Tuple> attrList, bool qualified = false);
 
-  /*
-   * \brief Overwrites all attributes of another attribute list to itself.
-   * The attribute names are qualified based on the second argument.
-   *
-   */
-  virtual void OverwriteAllAttributes (Ptr<Tuple> attrList, bool qualified = false);
-
   /**
    * \brief Performs a project operation and returns a new tuple with the
    * given name and the requested attributes that are renamed correspondingly
@@ -225,6 +220,15 @@ public:
     m_refCount++;
   }
 
+  unsigned int DecRefCount ()
+  {
+    if (m_refCount > 0) 
+      {
+        m_refCount--;
+      }	
+    return m_refCount;
+  }
+
   unsigned int GetRefCount ()
   {
     return m_refCount;
@@ -256,6 +260,19 @@ public:
   }
 
 protected:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "Reach Tuple?";
+    ar & boost::serialization::base_object<Object>(*this);
+    ar & m_attributes;
+    ar & m_timestamp;
+    ar & m_refCount;
+    //    ar & m_name;
+  }
 
   map<string, Ptr<TupleAttribute> > m_attributes;
 

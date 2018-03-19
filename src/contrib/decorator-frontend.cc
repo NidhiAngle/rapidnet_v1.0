@@ -32,12 +32,10 @@
 
 #include "ns3/mobility-model.h"
 #include "ns3/rectangle.h"
-#include "ns3/rapidnet-application-base.h"
+
 #include "decorator-frontend.h"
 
 using namespace ns3;
-using namespace std; 
-using namespace ns3::rapidnet;
 
 NS_LOG_COMPONENT_DEFINE("Decorator");
 
@@ -104,15 +102,20 @@ DecoratorFrontend::Init()
        iter++) {
     Ptr<Node> node = (*iter);
     
-    Ptr<RapidNetApplicationBase> rapidNetApplication = node->GetApplication (0)->GetObject<RapidNetApplicationBase> ();
-    vector<Ipv4Address> addressList = rapidNetApplication->GetAddressList ();
-      for (vector<Ipv4Address>::iterator iterator = addressList.begin (); iterator != addressList.end (); iterator++)
-      {
-        Ipv4Address ipv4Address = *iterator;
+    Ptr<Ipv4> ipv4 = node->GetObject<Ipv4>();
+    NS_ASSERT(ipv4 != 0);
+
+    // NS_LOG_INFO("Node " << node->GetId() << " " << ipv4->GetNInterfaces() <<
+    //         " interfaces");
+
+    for (uint32_t index = 0; index < ipv4->GetNInterfaces(); index++) {
+      Ipv4Address ipv4Address = ipv4->GetAddress(index, 0).GetLocal ();
+
        if (ipv4Address != loopback) {
           (*m_ostream) << now << " ip " << node->GetId() << " " <<
             ipv4Address << std::endl;
       }
+      // end iterating over interfaces
     }
  
 	
@@ -125,6 +128,10 @@ DecoratorFrontend::Init()
       (*m_ostream) << now << " position " << node->GetId() << " " <<
         pos.x << " " << pos.y << " " << pos.z << " " <<
         vel.x << " " << vel.y << " " << vel.z << std::endl;
+
+      //    } else {
+      //      (*m_ostream) << now << " node " << node->GetId() << " noposition"
+      //                   << std::endl;
     }
 
     // end iterate over nodes

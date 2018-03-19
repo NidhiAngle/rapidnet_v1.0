@@ -34,6 +34,12 @@ Tuple::GetTypeId (void)
   return tid;
 }
 
+Tuple::Tuple ()
+{
+  SetName ("no-name");
+  m_refCount = 1;
+}
+
 Tuple::Tuple (string name)
 {
   SetName (name);
@@ -48,7 +54,6 @@ Tuple::Tuple (Tuple& tuple)
     tuple.m_attributes.begin (); it != tuple.m_attributes.end (); it++)
     {
       m_attributes[it->first] = CopyObject<TupleAttribute> (it->second);
-//      m_attributes[it->first] = it->second;
     }
   m_timestamp = tuple.m_timestamp;
   m_refCount = tuple.m_refCount;
@@ -80,9 +85,9 @@ Tuple::HasAttribute (string name)
 void
 Tuple::AddAttribute (Ptr<TupleAttribute> attr)
 {
- /* NS_ASSERT_MSG (!HasAttribute (attr->GetName ()),
+  NS_ASSERT_MSG (!HasAttribute (attr->GetName ()),
     "Attribute with name '" << attr->GetName () <<
-    "' already exists in '" << ToString () << "'.");*/
+    "' already exists in '" << GetName () << "'.");
   m_attributes[attr->GetName()] = attr;
 }
 
@@ -215,25 +220,6 @@ Tuple::AddAllAttributes (Ptr<Tuple> tuple, bool qualified)
         TupleAttribute::New (QUAL (tuple->GetName (),
           it->second->GetName ()), it->second) :
           CopyObject<TupleAttribute>(it->second));
-      //Performance Tuning
-      //CopyObject<TupleAttribute> (it->second));
-    }
-}
-
-void
-Tuple::OverwriteAllAttributes (Ptr<Tuple> tuple, bool qualified)
-{
-  map<string, Ptr<TupleAttribute> > attrMap = tuple->GetAllAttributes ();
-  map<string, Ptr<TupleAttribute> >::iterator it;
-
-  for (it = attrMap.begin (); it != attrMap.end (); it ++)
-    {
-      OverwriteAttribute (qualified ?
-        TupleAttribute::New (QUAL (tuple->GetName (),
-          it->second->GetName ()), it->second) :
-          CopyObject<TupleAttribute>(it->second));
-        //Performance Tuning
-        //CopyObject<TupleAttribute> (it->second));
     }
 }
 
@@ -281,8 +267,6 @@ Tuple::Project (string newTupleName, list<string> attrNames,
         }
       else
         {
-           //Performance Tuning 
-//           retval->AddAttribute (m_attributes[*it]);
            retval->AddAttribute (CopyObject<TupleAttribute> (m_attributes[*it]));
         }
     }

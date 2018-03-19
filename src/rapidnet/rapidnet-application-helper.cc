@@ -21,10 +21,6 @@
 #include "ns3/ipv4.h"
 #include "ns3/ipv4-address.h"
 #include "ns3/net-device.h"
-#include "sys/types.h"
-#include "netinet/in.h"
-#include "arpa/inet.h"
-#include <netdb.h>
 
 namespace ns3 {
 namespace rapidnet {
@@ -45,9 +41,6 @@ RapidNetApplicationHelper::Install (NodeContainer container)
     {
       Ptr<Node> node = *i;
       Ptr<RapidNetApplicationBase> application = CreateNewApplication ();
-      if(m_l4Platform)
-        application->SetL4Platform(true);
-      
       SetAddress (node, application);
       node->AddApplication (application);
       application->SetNode(node);
@@ -61,8 +54,6 @@ RapidNetApplicationHelper::Install (Node node)
 {
   ApplicationContainer apps;
   Ptr<RapidNetApplicationBase> application = CreateNewApplication ();
-  if(m_l4Platform)
-    application->SetL4Platform(true);
   SetAddress (Ptr<Node> (&node), application);
   node.AddApplication (application);
   apps.Add (application);
@@ -73,42 +64,6 @@ void
 RapidNetApplicationHelper::SetAddress (Ptr<Node> node,
   Ptr<RapidNetApplicationBase> application)
 {
-  if (m_l4Platform == true)
-  {
-
-    if (m_localAddress != Ipv4Address::GetAny())
-    {
-      application->SetAddress (m_localAddress);
-      std::clog << "localAddress: " << m_localAddress << endl;
-      return;
-    }	
-    Ipv4Address local;
-    char name[80];
-    gethostname (name, 80);
-    struct hostent *hp;  
-    struct in_addr **addr_list;
-    hp = gethostbyname (name);
-    addr_list = (struct in_addr**)hp->h_addr_list;
-    for (int i = 0; addr_list[i] != NULL; i++)
-    {
-      std::clog << "Available addresses: " << Ipv4Address (inet_ntoa (*addr_list[i])) << endl;    
-    }
-    for (int i = 0; addr_list[i] != NULL; i++)
-      {        
-         if (Ipv4Address (inet_ntoa (*addr_list[i])) != Ipv4Address::GetLoopback() ) 
-            {
-              // hp->addr_list[i] is a non-loopback address
-              // bcopy (hp->h_addr, (char *) &sin.sin_addr, hp->h_length);
-              local = Ipv4Address (inet_ntoa (*addr_list[i]));
-              application -> SetAddress (local);
-              std::clog << "localAddress: " << local << endl;
-              break;
-            }
-      }
-
-   }
-  else 
-  {
     Ptr<Ipv4> ipv4 = node->GetObject<Ipv4> ();
     NS_ASSERT_MSG (ipv4 != 0,
       "RapidNetApplicationHelper: Ipv4 object not found in node!");
@@ -129,19 +84,6 @@ RapidNetApplicationHelper::SetAddress (Ptr<Node> node,
         }
       }
   }
-}
-
-void
-RapidNetApplicationHelper::SetL4Platform (bool l4Platform)
-{
-  m_l4Platform = l4Platform;
-}
-
-void
-RapidNetApplicationHelper::SetLocalAddress (Ipv4Address localAddress)
-{
-  m_localAddress = localAddress;
-}
 
 } // namespace rapidnet
 } // namespace ns3

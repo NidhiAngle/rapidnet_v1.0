@@ -18,11 +18,10 @@ using namespace ns3::rapidnet::pathvector2;
 
 const string Pathvector2::BESTPATH = "bestPath";
 const string Pathvector2::LINK = "link";
+const string Pathvector2::LINK1 = "link1";
 const string Pathvector2::PATH = "path";
-const string Pathvector2::PATHDELETE = "pathDelete";
-const string Pathvector2::R2LOCAL1R2LINKZSEND = "r2Local1r2linkZsend";
 const string Pathvector2::R2LOCAL2PATHSEND = "r2Local2pathsend";
-const string Pathvector2::R2LINKZ = "r2linkZ";
+const string Pathvector2::R2LINK1Z = "r2link1Z";
 
 NS_LOG_COMPONENT_DEFINE ("Pathvector2");
 NS_OBJECT_ENSURE_REGISTERED (Pathvector2);
@@ -31,7 +30,7 @@ TypeId
 Pathvector2::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::rapidnet::pathvector2::Pathvector2")
-    .SetParent<Discovery> ()
+    .SetParent<RapidNetApplicationBase> ()
     .AddConstructor<Pathvector2> ()
     ;
   return tid;
@@ -52,7 +51,7 @@ Pathvector2::DoDispose (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
 
-  Discovery::DoDispose ();
+  RapidNetApplicationBase::DoDispose ();
 }
 
 void
@@ -60,7 +59,7 @@ Pathvector2::StartApplication (void)
 {
   NS_LOG_FUNCTION_NOARGS ();
 
-  Discovery::StartApplication ();
+  RapidNetApplicationBase::StartApplication ();
   RAPIDNET_LOG_INFO("Pathvector2 Application Started");
 }
 
@@ -69,29 +68,23 @@ Pathvector2::StopApplication ()
 {
   NS_LOG_FUNCTION_NOARGS ();
 
-  Discovery::StopApplication ();
+  RapidNetApplicationBase::StopApplication ();
   RAPIDNET_LOG_INFO("Pathvector2 Application Stopped");
 }
 
 void
 Pathvector2::InitDatabase ()
 {
-  //Discovery::InitDatabase ();
+  //RapidNetApplicationBase::InitDatabase ();
 
   AddRelationWithKeys (BESTPATH, attrdeflist (
     attrdef ("bestPath_attr2", IPV4)));
 
   AddRelationWithKeys (LINK, attrdeflist (
-    attrdef ("link_attr1", IPV4),
-    attrdef ("link_attr2", IPV4)),
-    Seconds (11));
+    attrdef ("link_attr2", IPV4)));
 
   AddRelationWithKeys (PATH, attrdeflist (
     attrdef ("path_attr4", LIST)));
-
-  AddRelationWithKeys (R2LINKZ, attrdeflist (
-    attrdef ("r2linkZ_attr1", IPV4),
-    attrdef ("r2linkZ_attr2", IPV4)));
 
   m_aggr_bestpathMinC = AggrMin::New (BESTPATH,
     this,
@@ -107,51 +100,27 @@ Pathvector2::InitDatabase ()
 void
 Pathvector2::DemuxRecv (Ptr<Tuple> tuple)
 {
-  Discovery::DemuxRecv (tuple);
+  RapidNetApplicationBase::DemuxRecv (tuple);
 
   if (IsInsertEvent (tuple, LINK))
     {
       R1Eca0Ins (tuple);
     }
-  if (IsRefreshEvent (tuple, LINK))
+  if (IsDeleteEvent (tuple, LINK))
     {
-      R1Eca0Ref (tuple);
+      R1Eca0Del (tuple);
     }
-  if (IsRecvEvent (tuple, R2LOCAL1R2LINKZSEND))
+  if (IsRecvEvent (tuple, LINK1))
     {
-      R2Local1Eca0RemoteIns (tuple);
-    }
-  if (IsInsertEvent (tuple, LINK))
-    {
-      R2Local1Eca0Ins (tuple);
-    }
-  if (IsRefreshEvent (tuple, LINK))
-    {
-      R2Local1Eca0Ref (tuple);
+      R2Local1_eca (tuple);
     }
   if (IsRecvEvent (tuple, R2LOCAL2PATHSEND))
     {
-      R2Local2Eca0RemoteIns (tuple);
+      R2Local2ECAMat (tuple);
     }
-  if (IsRecvEvent (tuple, PATHDELETE))
+  if (IsRecvEvent (tuple, R2LINK1Z))
     {
-      R2Local2Eca0RemoteDel (tuple);
-    }
-  if (IsInsertEvent (tuple, R2LINKZ))
-    {
-      R2Local2Eca0Ins (tuple);
-    }
-  if (IsDeleteEvent (tuple, R2LINKZ))
-    {
-      R2Local2Eca0Del (tuple);
-    }
-  if (IsInsertEvent (tuple, BESTPATH))
-    {
-      R2Local2Eca1Ins (tuple);
-    }
-  if (IsDeleteEvent (tuple, BESTPATH))
-    {
-      R2Local2Eca1Del (tuple);
+      R2Local2_eca (tuple);
     }
   if (IsInsertEvent (tuple, PATH))
     {
@@ -198,9 +167,9 @@ Pathvector2::R1Eca0Ins (Ptr<Tuple> link)
 }
 
 void
-Pathvector2::R1Eca0Ref (Ptr<Tuple> link)
+Pathvector2::R1Eca0Del (Ptr<Tuple> link)
 {
-  RAPIDNET_LOG_INFO ("R1Eca0Ref triggered");
+  RAPIDNET_LOG_INFO ("R1Eca0Del triggered");
 
   Ptr<Tuple> result = link;
 
@@ -228,74 +197,34 @@ Pathvector2::R1Eca0Ref (Ptr<Tuple> link)
       "path_attr3",
       "path_attr4"));
 
-  Insert (result);
+  Delete (result);
 }
 
 void
-Pathvector2::R2Local1Eca0RemoteIns (Ptr<Tuple> r2Local1r2linkZsend)
+Pathvector2::R2Local1_eca (Ptr<Tuple> link1)
 {
-  RAPIDNET_LOG_INFO ("R2Local1Eca0RemoteIns triggered");
+  RAPIDNET_LOG_INFO ("R2Local1_eca triggered");
 
-  Ptr<Tuple> result = r2Local1r2linkZsend;
+  Ptr<Tuple> result = link1;
 
   result = result->Project (
-    R2LINKZ,
-    strlist ("r2Local1r2linkZsend_attr1",
-      "r2Local1r2linkZsend_attr2",
-      "r2Local1r2linkZsend_attr3"),
-    strlist ("r2linkZ_attr1",
-      "r2linkZ_attr2",
-      "r2linkZ_attr3"));
-
-  Insert (result);
-}
-
-void
-Pathvector2::R2Local1Eca0Ins (Ptr<Tuple> link)
-{
-  RAPIDNET_LOG_INFO ("R2Local1Eca0Ins triggered");
-
-  Ptr<Tuple> result = link;
-
-  result = result->Project (
-    R2LOCAL1R2LINKZSEND,
-    strlist ("link_attr1",
-      "link_attr2",
-      "link_attr3",
-      "link_attr2"),
-    strlist ("r2Local1r2linkZsend_attr1",
-      "r2Local1r2linkZsend_attr2",
-      "r2Local1r2linkZsend_attr3",
+    R2LINK1Z,
+    strlist ("link1_attr1",
+      "link1_attr2",
+      "link1_attr3",
+      "link1_attr2"),
+    strlist ("r2link1Z_attr1",
+      "r2link1Z_attr2",
+      "r2link1Z_attr3",
       RN_DEST));
 
   Send (result);
 }
 
 void
-Pathvector2::R2Local1Eca0Ref (Ptr<Tuple> link)
+Pathvector2::R2Local2ECAMat (Ptr<Tuple> r2Local2pathsend)
 {
-  RAPIDNET_LOG_INFO ("R2Local1Eca0Ref triggered");
-
-  Ptr<Tuple> result = link;
-
-  result = result->Project (
-    R2LOCAL1R2LINKZSEND,
-    strlist ("link_attr1",
-      "link_attr2",
-      "link_attr3",
-      "link_attr2"),
-    strlist ("r2Local1r2linkZsend_attr1",
-      "r2Local1r2linkZsend_attr2",
-      "r2Local1r2linkZsend_attr3",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Pathvector2::R2Local2Eca0RemoteIns (Ptr<Tuple> r2Local2pathsend)
-{
-  RAPIDNET_LOG_INFO ("R2Local2Eca0RemoteIns triggered");
+  RAPIDNET_LOG_INFO ("R2Local2ECAMat triggered");
 
   Ptr<Tuple> result = r2Local2pathsend;
 
@@ -314,46 +243,25 @@ Pathvector2::R2Local2Eca0RemoteIns (Ptr<Tuple> r2Local2pathsend)
 }
 
 void
-Pathvector2::R2Local2Eca0RemoteDel (Ptr<Tuple> pathDelete)
+Pathvector2::R2Local2_eca (Ptr<Tuple> r2link1Z)
 {
-  RAPIDNET_LOG_INFO ("R2Local2Eca0RemoteDel triggered");
-
-  Ptr<Tuple> result = pathDelete;
-
-  result = result->Project (
-    PATH,
-    strlist ("pathDelete_attr1",
-      "pathDelete_attr2",
-      "pathDelete_attr3",
-      "pathDelete_attr4"),
-    strlist ("path_attr1",
-      "path_attr2",
-      "path_attr3",
-      "path_attr4"));
-
-  Delete (result);
-}
-
-void
-Pathvector2::R2Local2Eca0Ins (Ptr<Tuple> r2linkZ)
-{
-  RAPIDNET_LOG_INFO ("R2Local2Eca0Ins triggered");
+  RAPIDNET_LOG_INFO ("R2Local2_eca triggered");
 
   Ptr<RelationBase> result;
 
   result = GetRelation (BESTPATH)->Join (
-    r2linkZ,
+    r2link1Z,
     strlist ("bestPath_attr1"),
-    strlist ("r2linkZ_attr2"));
+    strlist ("r2link1Z_attr2"));
 
   result->Assign (Assignor::New ("C",
     Operation::New (RN_PLUS,
-      VarExpr::New ("r2linkZ_attr3"),
+      VarExpr::New ("r2link1Z_attr3"),
       VarExpr::New ("bestPath_attr3"))));
 
   result->Assign (Assignor::New ("P1",
     FAppend::New (
-      VarExpr::New ("r2linkZ_attr1"))));
+      VarExpr::New ("r2link1Z_attr1"))));
 
   result->Assign (Assignor::New ("P",
     FConcat::New (
@@ -364,167 +272,20 @@ Pathvector2::R2Local2Eca0Ins (Ptr<Tuple> r2linkZ)
     Operation::New (RN_EQ,
       FMember::New (
         VarExpr::New ("bestPath_attr4"),
-        VarExpr::New ("r2linkZ_attr1")),
+        VarExpr::New ("r2link1Z_attr1")),
       ValueExpr::New (Int32Value::New (0)))));
 
   result = result->Project (
     R2LOCAL2PATHSEND,
-    strlist ("r2linkZ_attr1",
+    strlist ("r2link1Z_attr1",
       "bestPath_attr2",
       "C",
       "P",
-      "r2linkZ_attr1"),
+      "r2link1Z_attr1"),
     strlist ("r2Local2pathsend_attr1",
       "r2Local2pathsend_attr2",
       "r2Local2pathsend_attr3",
       "r2Local2pathsend_attr4",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Pathvector2::R2Local2Eca0Del (Ptr<Tuple> r2linkZ)
-{
-  RAPIDNET_LOG_INFO ("R2Local2Eca0Del triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (BESTPATH)->Join (
-    r2linkZ,
-    strlist ("bestPath_attr1"),
-    strlist ("r2linkZ_attr2"));
-
-  result->Assign (Assignor::New ("C",
-    Operation::New (RN_PLUS,
-      VarExpr::New ("r2linkZ_attr3"),
-      VarExpr::New ("bestPath_attr3"))));
-
-  result->Assign (Assignor::New ("P1",
-    FAppend::New (
-      VarExpr::New ("r2linkZ_attr1"))));
-
-  result->Assign (Assignor::New ("P",
-    FConcat::New (
-      VarExpr::New ("P1"),
-      VarExpr::New ("bestPath_attr4"))));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      FMember::New (
-        VarExpr::New ("bestPath_attr4"),
-        VarExpr::New ("r2linkZ_attr1")),
-      ValueExpr::New (Int32Value::New (0)))));
-
-  result = result->Project (
-    PATHDELETE,
-    strlist ("r2linkZ_attr1",
-      "bestPath_attr2",
-      "C",
-      "P",
-      "r2linkZ_attr1"),
-    strlist ("pathDelete_attr1",
-      "pathDelete_attr2",
-      "pathDelete_attr3",
-      "pathDelete_attr4",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Pathvector2::R2Local2Eca1Ins (Ptr<Tuple> bestPath)
-{
-  RAPIDNET_LOG_INFO ("R2Local2Eca1Ins triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (R2LINKZ)->Join (
-    bestPath,
-    strlist ("r2linkZ_attr2"),
-    strlist ("bestPath_attr1"));
-
-  result->Assign (Assignor::New ("C",
-    Operation::New (RN_PLUS,
-      VarExpr::New ("r2linkZ_attr3"),
-      VarExpr::New ("bestPath_attr3"))));
-
-  result->Assign (Assignor::New ("P1",
-    FAppend::New (
-      VarExpr::New ("r2linkZ_attr1"))));
-
-  result->Assign (Assignor::New ("P",
-    FConcat::New (
-      VarExpr::New ("P1"),
-      VarExpr::New ("bestPath_attr4"))));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      FMember::New (
-        VarExpr::New ("bestPath_attr4"),
-        VarExpr::New ("r2linkZ_attr1")),
-      ValueExpr::New (Int32Value::New (0)))));
-
-  result = result->Project (
-    R2LOCAL2PATHSEND,
-    strlist ("r2linkZ_attr1",
-      "bestPath_attr2",
-      "C",
-      "P",
-      "r2linkZ_attr1"),
-    strlist ("r2Local2pathsend_attr1",
-      "r2Local2pathsend_attr2",
-      "r2Local2pathsend_attr3",
-      "r2Local2pathsend_attr4",
-      RN_DEST));
-
-  Send (result);
-}
-
-void
-Pathvector2::R2Local2Eca1Del (Ptr<Tuple> bestPath)
-{
-  RAPIDNET_LOG_INFO ("R2Local2Eca1Del triggered");
-
-  Ptr<RelationBase> result;
-
-  result = GetRelation (R2LINKZ)->Join (
-    bestPath,
-    strlist ("r2linkZ_attr2"),
-    strlist ("bestPath_attr1"));
-
-  result->Assign (Assignor::New ("C",
-    Operation::New (RN_PLUS,
-      VarExpr::New ("r2linkZ_attr3"),
-      VarExpr::New ("bestPath_attr3"))));
-
-  result->Assign (Assignor::New ("P1",
-    FAppend::New (
-      VarExpr::New ("r2linkZ_attr1"))));
-
-  result->Assign (Assignor::New ("P",
-    FConcat::New (
-      VarExpr::New ("P1"),
-      VarExpr::New ("bestPath_attr4"))));
-
-  result = result->Select (Selector::New (
-    Operation::New (RN_EQ,
-      FMember::New (
-        VarExpr::New ("bestPath_attr4"),
-        VarExpr::New ("r2linkZ_attr1")),
-      ValueExpr::New (Int32Value::New (0)))));
-
-  result = result->Project (
-    PATHDELETE,
-    strlist ("r2linkZ_attr1",
-      "bestPath_attr2",
-      "C",
-      "P",
-      "r2linkZ_attr1"),
-    strlist ("pathDelete_attr1",
-      "pathDelete_attr2",
-      "pathDelete_attr3",
-      "pathDelete_attr4",
       RN_DEST));
 
   Send (result);

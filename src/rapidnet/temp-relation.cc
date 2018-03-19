@@ -73,12 +73,6 @@ TempRelation::GetAllTuples ()
   return m_tuples;
 }
 
-void
-TempRelation::ClearAllTuples ()
-{
-  m_tuples.clear();  
-}
-
 uint32_t
 TempRelation::Count ()
 {

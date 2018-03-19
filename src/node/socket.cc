@@ -33,7 +33,6 @@ namespace ns3 {
 
 Socket::Socket (void)
 {
-  m_boundnetdevice = 0;
   NS_LOG_FUNCTION_NOARGS ();
 }
 
@@ -46,9 +45,7 @@ Ptr<Socket>
 Socket::CreateSocket (Ptr<Node> node, TypeId tid)
 {
   Ptr<Socket> s;
-  NS_ASSERT (node != 0);
   Ptr<SocketFactory> socketFactory = node->GetObject<SocketFactory> (tid);
-  NS_ASSERT (socketFactory != 0);
   s = socketFactory->CreateSocket ();
   NS_ASSERT (s != 0);
   return s;
@@ -62,16 +59,6 @@ Socket::SetConnectCallback (
   NS_LOG_FUNCTION_NOARGS ();
   m_connectionSucceeded = connectionSucceeded;
   m_connectionFailed = connectionFailed;
-}
-
-void 
-Socket::SetCloseCallbacks (
-  Callback<void, Ptr<Socket> > normalClose,
-  Callback<void, Ptr<Socket> > errorClose)
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  m_normalClose = normalClose;
-  m_errorClose = errorClose;
 }
 
 void 
@@ -207,26 +194,6 @@ Socket::NotifyConnectionFailed (void)
     }
 }
 
-void 
-Socket::NotifyNormalClose (void)
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  if (!m_normalClose.IsNull ())
-    {
-      m_normalClose (this);
-    }
-}
-
-void 
-Socket::NotifyErrorClose (void)
-{
-  NS_LOG_FUNCTION_NOARGS ();
-  if (!m_errorClose.IsNull ())
-    {
-      m_errorClose (this);
-    }
-}
-
 bool 
 Socket::NotifyConnectionRequest (const Address &from)
 {
@@ -296,32 +263,6 @@ Socket::DoDispose (void)
   m_dataSent = MakeNullCallback<void,Ptr<Socket>, uint32_t> ();
   m_sendCb = MakeNullCallback<void,Ptr<Socket>, uint32_t> ();
   m_receivedData = MakeNullCallback<void,Ptr<Socket> > ();
-}
-
-void
-Socket::BindToNetDevice (Ptr<NetDevice> netdevice)
-{
-  if (netdevice != 0)
-    {
-      bool found = false;
-      for (uint32_t i = 0; i < GetNode()->GetNDevices (); i++)
-        {
-          if (GetNode()->GetDevice (i) == netdevice)
-            {
-              found = true;
-              break;
-            }
-        }
-        NS_ASSERT_MSG (found, "Socket cannot be bound to a NetDevice not existing on the Node");
-    }
-  m_boundnetdevice = netdevice;
-  return;
-}
-
-Ptr<NetDevice>
-Socket::GetBoundNetDevice ()
-{
-  return m_boundnetdevice;
 }
 
 /***************************************************************

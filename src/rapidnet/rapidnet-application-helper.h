@@ -16,8 +16,8 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
  *
  */
-#ifndef RAPIDNET_APPLICATION_HELPER_L4_H
-#define RAPIDNET_APPLICATION_HELPER_L4_H
+#ifndef RAPIDNET_APPLICATION_HELPER_H
+#define RAPIDNET_APPLICATION_HELPER_H
 
 #include <stdint.h>
 #include "ns3/application-container.h"
@@ -36,14 +36,11 @@ namespace rapidnet {
 class RapidNetApplicationHelper : public RefCountBase
 {
 public:
-  RapidNetApplicationHelper () { m_l4Platform = false; m_localAddress = Ipv4Address::GetAny();}
+  RapidNetApplicationHelper () {}
 
   virtual ~RapidNetApplicationHelper () {}
 
   void SetAttribute (std::string name, const AttributeValue &value);
-
-  void SetL4Platform (bool l4Platform);
-  void SetLocalAddress (Ipv4Address localAddress);
 
   /**
    * \brief Installs the RapidNet application to the nodes in the given
@@ -71,10 +68,6 @@ protected:
   virtual Ptr<RapidNetApplicationBase> CreateNewApplication () = 0;
 
   ObjectFactory m_factory;
-  
-  private:
-    bool m_l4Platform;
-    Ipv4Address m_localAddress;
 };
 
 } // namespace rapidnet

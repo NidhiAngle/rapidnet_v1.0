@@ -27,6 +27,17 @@ all_modules = (
     'applications/onoff',
     'applications/packet-sink',
     'applications/udp-echo',
+    'applications/myproto',
+
+    'applications/dns',
+    'applications/dns-prov',
+    'applications/dns-prov-comp-strawman',
+    'applications/dns-prov-comp-online',
+    
+    'applications/pktfwd-norm-prov-ete',
+    'applications/pktfwd-norm-prov-comp-online-ete',
+    'applications/pktfwd-norm-prov-comp-strawman-ete',
+    
     'routing/olsr',
     'routing/global-routing',
     'routing/static-routing',
@@ -40,6 +51,15 @@ all_modules = (
     'rapidnet/values',
     'rapidnet/tests',
     'rapidnet-compiler',
+    
+    'applications/arp',
+    'applications/sdn-arp',
+    'applications/load-balancing',
+    'applications/load-balancer-learning',
+    'applications/sdn-load-balancing',
+    'applications/firewall',
+    'applications/sdn-mac-learning',
+    'applications/sdn-mac-learning-bcast',
     'applications/pingpong',
     'applications/reachable',
     'applications/pathvector',
@@ -65,10 +85,37 @@ all_modules = (
     'applications/secure-pathvector',
     'applications/secure-simple-bgp',
     'applications/secure-pingpong',
-    'l4-platform',
-    'applications/pingpong-l4',
-    'applications/provenance',
-    'applications/mlprovenance'
+    'applications/pktfwd-sdn',
+    'applications/pktfwd-sdn-prov',
+    'applications/pktfwd-sdn-prov-comp',
+    'applications/pktfwd-sdn-prov-comp-static-check',            
+    'applications/pktfwd-norm',
+    'applications/pktfwd-norm-prov',
+    'applications/pktfwd-norm-prov-comp-strawman',
+    'applications/pktfwd-norm-prov-comp-online',
+    'applications/pktfwd-norm-bdfair',
+    'applications/pktfwd-norm-bdfair-prov',
+    'applications/pktfwd-norm-bdfair-prov-comp-strawman',
+    'applications/pktfwd-norm-bdfair-prov-comp-online',
+    'applications/pktfwd-norm-no-device',
+    'applications/pktfwd-norm-nodev-provquery',
+    'applications/pktfwd-norm-prov-oct0116',
+    'applications/pktfwd-norm-prov-query-oct0116',
+    'applications/pktfwd-norm-prov-provquery-oct0116',
+    'applications/pktfwd-norm-prov-auxtable-oct0116',
+    'applications/pktfwd-norm-prov-auxtable-query',
+    'applications/pktfwd-norm-prov-ruleauxtable',
+    'applications/pktfwd-norm-prov-ruleauxtable-query',
+    'applications/pktfwd-norm-prov-exspan-withitm-query',
+    'applications/pktfwd-norm-dist-hlist-online-oct092016',
+    'applications/pktfwd-norm-dist-hlist-online-auxtables',
+    'applications/pktfwd-norm-dist-hlist-online-auxtables-query',
+    'applications/pktfwd-norm-dist-hlist-rmitm-auxtables',
+    'applications/pktfwd-norm-dist-hlist-rmitm-auxtables-query',
+    'applications/pktfwd-norm-online-exactmatch-auxtables-query',
+    'applications/pktfwd-online-bcast-slowchange-update-query',
+    'applications/pktfwd-online-bcast-slowchange-update',
+    'applications/pktfwd-norm-online-query-init',
     )
 
 def set_options(opt):
@@ -103,7 +150,7 @@ def configure(conf):
     
     ## Used to link the 'run-tests' program with all of ns-3 code
     conf.env['NS3_MODULES'] = ['ns3-' + module.split('/')[-1] for module in all_modules]
-    conf.env.append_value('INCLUDES',['/media/sdb1/nfs/shared/caffe/include'])
+
 
 def create_ns3_module(bld, name, dependencies=()):
     module = bld.new_task_gen('cxx')

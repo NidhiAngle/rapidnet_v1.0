@@ -32,24 +32,6 @@ Installation Instructions
 * [Installing on MacOS](https://github.com/lkloh/rapidnet/wiki/Installing-On-MacOS)
 * [Installing on Fedora](https://github.com/powerist/rapidnet/wiki/Installing-on-Fedora-Cluster-Machine)
 
-
-Issue with Building RapidNet on Ubuntu 16.04
-----------------------------------------------
-
-There is an issue with building rapidnet on Ubuntu 16.04 (and higher). If one tries to build using ./waf An error occurs in the Scripting.py file. To resolve this issue either change line 190 from
-
-```
-"for incstr in Utils.cmd_output(\"%s %s --includes\"%(python,python_config)).strip().split():"
-```
-
-to
-
-```
-"for incstr in Utils.cmd_output(\"%s --includes\"%(python_config)).strip().split():
-```
-
-or use build.sh to build the project initially.
-
 How to run a NDLog program from outside the folder
 --------------------------------------------------
 
@@ -71,10 +53,5 @@ SMT-LIB Resources
 
 Running examples
 ----------------
+* `./rapidnet/compiler/compile /Users/lkloh/rapidnet/src/applications/firewall/firewall.olg`
 * [Upenn Tutorial](http://netdb.cis.upenn.edu/rapidnet/doxygen/html/rapidnet-ndlog-application.html)
-* Rapidnet-A small tutorial.pdf
-
-Contact Us
---------------
-
-For any queries or questions, kindly send us an email to netdb.seas.upenn@gmail.com. Thank you!

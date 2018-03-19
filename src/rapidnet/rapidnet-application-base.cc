@@ -23,15 +23,12 @@
 #include "ns3/ipv4-value.h"
 #include "pki-authentication-manager.h"
 #include "blowfish-encryption-manager.h"
-#include "ns3/udp-transport-socket-impl.h"
-#include "ns3/udp-socket-factory.h"
-#include "ns3/udp-transport-socket-factory-impl.h"
-#include "ns3/uinteger.h"
 
 #include <fstream> // add-on
 #include <sstream> //add-on
-#include  <time.h>
-#include  <sys/time.h>
+#include <boost/archive/text_iarchive.hpp>
+#include <boost/archive/text_oarchive.hpp>
+
 
 using namespace std;
 using namespace ns3;
@@ -45,45 +42,20 @@ RapidNetApplicationBase::GetTypeId (void)
 {
   static TypeId tid = TypeId ("ns3::rapidnet::RapidNetApplicationBase")
     .SetParent<Application> ()
-    .AddConstructor<RapidNetApplicationBase> ()
-    .AddAttribute ("RapidNetPort",
-                   "Port for RapidNet application",
-                   UintegerValue (11111),
-                   MakeUintegerAccessor (&RapidNetApplicationBase::s_Port),
-                   MakeUintegerChecker<uint16_t> ())
-    .AddAttribute ("MaxUDPTxSize",
-                   "Max size of UDP packet, beyond which switch is made to TCP protocol",
-                   UintegerValue (1500),
-                   MakeUintegerAccessor (&RapidNetApplicationBase::m_udpMaxBytes),
-                   MakeUintegerChecker<uint16_t> ())
-    .AddAttribute ("ConnectionInactivityTimeout",
-                   "Timeout value for tearing down inactive TCP connections.",
-                   TimeValue (MilliSeconds (DEFAULT_CONNECTION_INACTIVITY_TIMEOUT)),
-                   MakeTimeAccessor (&RapidNetApplicationBase::m_tcpInactivityTimeout),
-                   MakeTimeChecker ())
     ;
   return tid;
 }
 
 RapidNetApplicationBase::RapidNetApplicationBase ()
-  : m_auditTCPConnectionsTimer (Timer::CANCEL_ON_DESTROY)
 {
   NS_LOG_FUNCTION_NOARGS ();
-  BytesOfDataReceived = 0;
-  BytesOfDataSent = 0;
-  totalPacketsReceived = 0;
-  totalPacketsSent = 0;
   SetAddress (Ipv4Address ("0.0.0.0"));
-  SetPort (11111);
-  //m_maxJitter = MAX_JITTER; // Use default
-  m_maxJitter = 0;
+  SetPort (4000);
+  m_maxJitter = MAX_JITTER; // Use default
   m_database = Database::New (Ptr<RapidNetApplicationBase> (this));
   m_eventSoftStateDelete = Simulator::ScheduleNow (
     &RapidNetApplicationBase::SoftStateDelete, this);
   m_decoratorFrontend = Ptr<RapidNetDecoratorFrontend> (NULL);
-  m_pendingTuples.clear();
-  m_processingPendingTuples = false;
-  m_l4Platform = false;
 }
 
 RapidNetApplicationBase::~RapidNetApplicationBase()
@@ -109,44 +81,6 @@ RapidNetApplicationBase::GetAddress (void)
   return m_address;
 }
 
-Ipv4Address
-RapidNetApplicationBase::GetIpv4Address (string locspec)
-{
-  std::vector<std::string> tokens;
-  Tokenize (locspec, tokens, ":");
-  if (tokens.size() == 0)
-    return "0.0.0.0";
-  std::vector<std::string>::iterator iter = tokens.begin();
-  return Ipv4Address(iter->c_str());
-}
-
-uint16_t
-RapidNetApplicationBase::GetPort (string locspec)
-{
-  if(m_l4Platform)
-    {
-      std::vector<std::string> tokens;
-      Tokenize (locspec, tokens, ":");
-      if (tokens.size() == 0)
-        return 0;
-      std::vector<std::string>::iterator iter = tokens.begin();
-      iter++;
-      return atoi(iter->c_str());
-    }
-  else
-    {
-      return s_Port;
-    }
-}
-
-string
-RapidNetApplicationBase::GetLocSpec (Ipv4Address ipAddr, uint16_t port)
-{
-  std::stringstream sstream;
-  sstream << ipAddr << ":" << port;
-  return sstream.str ();
-}
-
 void
 RapidNetApplicationBase::SetPort (uint16_t port)
 {
@@ -154,72 +88,10 @@ RapidNetApplicationBase::SetPort (uint16_t port)
   RAPIDNET_LOG_INFO ("Port set to " << port);
 }
 
-string
-RapidNetApplicationBase::GetLocalLocSpec (void)
-{
-  return GetLocSpec (GetAddress(), GetPort());
-}
-
 uint16_t
 RapidNetApplicationBase::GetPort ()
 {
   return s_Port;
-}
-
-
-
-void
-RapidNetApplicationBase::AddToAddressList (Ipv4Address addr)
-{
-  m_addressList.push_back(addr);
-}
-
-void
-RapidNetApplicationBase::AddInterface (Ipv4Address addr, uint32_t deviceIndex, const string & name)
-{
-  if (deviceIndex == 0)
-  {
-    SetAddress(addr); //For CCC
-    m_addressToDeviceMap[m_address] = deviceIndex;
-    m_deviceNameMap.insert (make_pair (deviceIndex, name));
-    m_numDevices ++;
-  }
-  else
-  {
-            m_addressList.push_back (addr);
-            m_deviceNameList.push_back (name);
-            //Build map right now
-            m_addressToDeviceMap[addr] = deviceIndex;
-            m_deviceNameMap.insert (make_pair (deviceIndex, name));
-            m_numDevices ++;
-  }
-}
-
-
-vector<Ipv4Address>
-RapidNetApplicationBase::GetAddressList (void) const
-{
-  return m_addressList;
-}
-
-void
-RapidNetApplicationBase::BuildAddressToDeviceMap()
-{
-  uint32_t deviceIndex = 0;
-
-  // device 0 is reserved for CCC, as done in InstallWifi and InstallIpv4
-  m_addressToDeviceMap[m_address] = deviceIndex;
-  deviceIndex++;
-
-  // left devices are for data
-  for (uint32_t i = 0; i < m_addressList.size(); i++)
-  {
-         m_addressToDeviceMap[m_addressList[i] ] = deviceIndex;
-        deviceIndex++;
-  }
-
-  // 1 CCC and others are data devices (The Loopback device is not counted)
-  m_numDevices = 1 + m_addressList.size ();
 }
 
 void
@@ -244,8 +116,7 @@ RapidNetApplicationBase::Insert (Ptr<Tuple> tuple)
       return;
     }
 
-  int status;
-  status = m_database->Insert (tuple);
+  int status = m_database->Insert (tuple);
   RAPIDNET_LOG_INFO (GetInsertStatusAsString (status) << " " << tuple);
 }
 
@@ -259,16 +130,6 @@ RapidNetApplicationBase::Insert (Ptr<RelationBase> reln)
     {
       Insert (*it);
     }
-}
-
-void
-RapidNetApplicationBase::ClearRelation (std::string relName)
-{
-  Ptr<RelationBase> relation = GetRelation (relName);
-  if (relation != NULL)
-  {
-    relation->ClearAllTuples();
-  }
 }
 
 void
@@ -309,26 +170,42 @@ RapidNetApplicationBase::SetMaxJitter (uint32_t maxJitter)
 }
 
 void
+RapidNetApplicationBase::SerializeRel(vector<string>& relNames, int nodeID, string storePath)
+{
+  std::cout << endl << endl << "Serialization of provenance tables" << endl << endl;
+  std::ostringstream oss;
+  oss << storePath << nodeID;
+  const char* fileName = oss.str().data();
+  //  std::cout << "Reach here?" << endl;
+  std::ofstream ofs(fileName);
+  boost::archive::text_oarchive ar(ofs);
+
+  //Serialize the provenance tables
+  //For example: ruleExec, equiHashTable, provHashTable
+  vector<string>::iterator itr;
+  for (itr = relNames.begin();itr != relNames.end();itr++)
+    {
+      bool exist = m_database->HasRelation(*itr);
+      if (exist == true)
+        {
+          std::cout << "Serialize table: " << *itr << endl;
+          Ptr<RelationBase> provRelation = m_database->GetRelation(*itr);
+          RelationBase* provRelBasePtr = GetPointer(provRelation);
+          Relation* provRelPtr = dynamic_cast<Relation*>(provRelBasePtr);
+          ar & provRelPtr;
+        }
+      else
+        {
+          std::cout << "Table not found: " << *itr << endl;
+        }
+    }
+}
+
+void
 RapidNetApplicationBase::DoDispose (void)
 {
-  if(m_l4Platform)
-    {
-        NS_LOG_FUNCTION_NOARGS ();
-        if (m_tcpSocket != 0)
-          {
-            m_tcpSocket->SetAcceptCallback (
-                                            MakeNullCallback<bool, Ptr<Socket>, const Address & > (),
-                                            MakeNullCallback<void, Ptr<Socket>, const Address &> ());
-          }
-        // Cancel timers
-        m_auditTCPConnectionsTimer.Cancel ();
-        Application::DoDispose ();
-    }
-  else
-    {
-      NS_LOG_FUNCTION_NOARGS ();
-      Application::DoDispose ();
-    }
+  NS_LOG_FUNCTION_NOARGS ();
+  Application::DoDispose ();
 }
 
 void
@@ -362,66 +239,16 @@ RapidNetApplicationBase::StopApplication ()
   if (m_Socket != 0)
     {
       m_Socket->SetRecvCallback (MakeNullCallback<void, Ptr<Socket> > ());
-      HandleClose(m_Socket);
-      m_Socket->Close();
     }
   Simulator::Cancel (m_eventSoftStateDelete);
   clog << "Application Stopped at " << Now () << endl;
-  Simulator::Stop ();
-  //exit(0);
 }
 
 void
 RapidNetApplicationBase::InitSocket (void)
 {
-  if(m_l4Platform)
-    {
-
       NS_LOG_FUNCTION_NOARGS ();
   
-      if (m_Socket == 0)
-        {
-          TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
-          m_Socket = Socket::CreateSocket (GetNode (), tid);
-          InetSocketAddress local = InetSocketAddress (m_address,
-                                                       s_Port);
-          m_Socket->Bind (local);
-          NS_LOG_INFO ("RapidNet UDP socket listening on address: " << m_address << " port: " << s_Port);
-        }
-      
-      m_Socket->SetRecvCallback (MakeCallback (&RapidNetApplicationBase::Receive,
-                                               this));
-      // Open a TCP socket, listening on s_Port+1
-      if (m_tcpSocket == 0)
-        {
-          TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-          m_tcpSocket = Socket::CreateSocket (GetNode (), tid);
-          uint16_t s_tcpPort;
-          if(s_Port == 0)
-            s_tcpPort = 0;
-          else
-            s_tcpPort = s_Port + 1;
-          InetSocketAddress local = InetSocketAddress (m_address, s_tcpPort);
-          m_tcpSocket->Bind (local);
-          m_tcpSocket->SetAcceptCallback (
-                                          MakeCallback (&RapidNetApplicationBase::HandleConnectionRequest, this),
-                                          MakeCallback (&RapidNetApplicationBase::HandleAccept, this));
-          NS_LOG_INFO ("RapidNet TCP socket listening on address: " << m_address << " port: " << s_tcpPort);
-        }
-      else
-        {
-          m_tcpSocket->SetAcceptCallback (
-                                          MakeCallback (&RapidNetApplicationBase::HandleConnectionRequest, this),
-                                          MakeCallback (&RapidNetApplicationBase::HandleAccept, this));
-        }
-      // Start listening
-      m_tcpSocket->Listen ();
-      // Audit connections timer init
-      m_auditTCPConnectionsTimer.SetFunction (&RapidNetApplicationBase::DoPeriodicAuditConnections, this);
-      m_auditTCPConnectionsTimer.Schedule (m_tcpInactivityTimeout);
-    }
-  else
-    {
       if (m_Socket == 0)
         {
           TypeId tid = TypeId::LookupByName ("ns3::UdpSocketFactory");
@@ -434,7 +261,6 @@ RapidNetApplicationBase::InitSocket (void)
       m_Socket->SetRecvCallback (MakeCallback (&RapidNetApplicationBase::Receive,
                                                this));
     }
-}
 
 void
 RapidNetApplicationBase::Send (Ptr<Tuple> tuple)
@@ -445,19 +271,11 @@ RapidNetApplicationBase::Send (Ptr<Tuple> tuple)
       return;
     }
   
-  if(m_l4Platform)
-    {
-      DoSend(tuple);
-    }
-  else
-    {
-
       uint32_t jitter = m_maxJitter == 0 ? 0 : rand () % m_maxJitter;
 
       Simulator::Schedule (MilliSeconds (jitter), &RapidNetApplicationBase::DoSend,
                            this, tuple);
     }
-}
 
 void
 RapidNetApplicationBase::Sign (Ptr<Tuple> tuple)
@@ -503,64 +321,9 @@ RapidNetApplicationBase::Decrypt (Ptr<Tuple> tuple)
   return m_encryptionMgr->Decrypt (tuple);
 }
 
-
-
-void
-RapidNetApplicationBase::PrintStats ()
-{
-  cout<<"Total Bytes Received = "<<BytesOfDataReceived<<endl;
-  cout<<"Total Bytes Sent = "<<BytesOfDataSent<<endl;
-  cout<<"Total Packets Received = "<<totalPacketsReceived<<endl;
-  cout<<"Total Packets Sent = "<<totalPacketsSent<<endl;
-
-  cout<<"*********************************************************"<<endl;
-}
-
 void
 RapidNetApplicationBase::DoSend (Ptr<Tuple> tuple)
 {
-
-  if(m_l4Platform)
-    {
-
-      Ptr<TupleAttribute> attribute = tuple->GetAttribute(RN_DEST);
-      Ptr<Value> value = attribute->GetValue();
-      
-      string destLocSpec = value->ToString();
-
-      Ipv4Address destIpv4 = GetIpv4Address (destLocSpec);
-
-      uint16_t destPort = GetPort (destLocSpec);
-      
-      tuple->RemoveAttribute (RN_DEST);
-      
-      if (destIpv4 == HOME_IP && destPort == GetPort ())
-        {
-          SendLocal (tuple);
-          return;
-        }
-      
-      if (!tuple->HasAttribute (RN_ACTION))
-        {
-          OnSend.Invoke (tuple);
-        }
-
-
-      InetSocketAddress addr = InetSocketAddress (destIpv4, destPort);
-      Ptr<Packet> packet = Create<Packet> ();
-      packet->AddHeader (RapidNetHeader (tuple));
-      
-      if (!tuple->HasAttribute (RN_ACTION))
-        {
-          RAPIDNET_LOG_INFO ("Sending " << tuple << " to " << addr.GetIpv4 ());
-        }
-
-
-      SendOverTCP (addr.GetIpv4 (), addr.GetPort ()+1, packet);
-
-    }
-  else
-    {
       if (!tuple->HasAttribute (RN_ACTION))
         {
           OnSend.Invoke (tuple);
@@ -585,49 +348,12 @@ RapidNetApplicationBase::DoSend (Ptr<Tuple> tuple)
       m_Socket->SendTo (packet, 0, addr);
     }
   
-}
-
 void
 RapidNetApplicationBase::SendLocal (Ptr<Tuple> tuple)
 {
-  if(m_l4Platform)
-    {
-      string localLocSpec = GetLocSpec (HOME_IP, GetPort());
-      tuple->AddAttribute (TupleAttribute::New (RN_DEST, StrValue::New (localLocSpec)));
-      //No need to add jitter for local sending
-      //DoSend (tuple);
-      if (!tuple->HasAttribute (RN_ACTION))
-        {
-          OnSend.Invoke (tuple);
-        }
-      //TODO : atomic async execution
-      //Simulator::ScheduleNow (&RapidNetApplicationBase::ProcessTuple, this, tuple, InetSocketAddress(HOME_IP, GetPort()));
-      //ProcessTuple (tuple, InetSocketAddress (HOME_IP, GetPort ()));
-      m_pendingTuples.push_back (tuple);
-      if (!m_processingPendingTuples)
-        {
-          ProcessPendingTuples ();
-        }
-    }
-  else
-    {
-      tuple->AddAttribute (TupleAttribute::New (RN_DEST, Ipv4Value::New (HOME_IP)));
-      DoSend(tuple);
-    }
-  
-}
-
-void
-RapidNetApplicationBase::ProcessPendingTuples ()
-{
-  m_processingPendingTuples = true;
-  while (m_pendingTuples.size ())
-  {
-    Ptr<Tuple> tuple = m_pendingTuples.front ();
-    m_pendingTuples.pop_front ();
-    ProcessTuple (tuple, InetSocketAddress (HOME_IP, GetPort ()));
-  }
-  m_processingPendingTuples = false;
+  tuple->AddAttribute (TupleAttribute::New (RN_DEST, Ipv4Value::New (HOME_IP)));
+  //No need to add jitter for local sending
+  DoSend (tuple);
 }
 
 void
@@ -693,30 +419,6 @@ RapidNetApplicationBase::SendLocal (Ptr<RelationBase> reln)
 void
 RapidNetApplicationBase::Receive (Ptr<Socket> socket)
 {
-
-  if(m_l4Platform)
-    {
-      NS_LOG_FUNCTION (this << socket);
-      NS_LOG_INFO ("RapidNetApplicationBase::Receive on UDP");
-      Ptr<Packet> packet;
-      Address from;
-      while (packet = socket->RecvFrom (from))
-        {
-          if (InetSocketAddress::IsMatchingType (from))
-            {
-              RapidNetHeader header;
-              packet->RemoveHeader (header);
-              Ptr<Tuple> tuple = header.GetTuple ();
-              ProcessTuple (tuple, from);
-              totalPacketsReceived++;
-              BytesOfDataReceived += packet->GetSize(); 
-              
-            }
-        }
-    }
-  else
-    {
-
         NS_LOG_FUNCTION (this << socket);
         Ptr<Packet> packet;
         Address from;
@@ -748,55 +450,10 @@ RapidNetApplicationBase::Receive (Ptr<Socket> socket)
                 //Add -src attribute
                 tuple->OverwriteAttribute (TupleAttribute::New (RN_SRC,
                                                                 Ipv4Value::New (fromIpv4)));
-                
-                DemuxRecv (tuple);
-                
-              }
+          DemuxRecv (tuple);
           }
     }
 }
-
-void
-RapidNetApplicationBase::ProcessTCPMessage (Ptr<Packet> packet, Ptr<RapidNetTCPConnection> tcpConnection)
-{
-  totalPacketsReceived++;
-  BytesOfDataReceived += packet->GetSize(); 
-  NS_LOG_INFO ("RapidNetApplicationBase::ProcessTCPMessage: Packet size = " << packet->GetSize ());
-  Address from = InetSocketAddress (tcpConnection->GetIpAddress (), tcpConnection->GetPort ()-1);
-  RapidNetHeader header;
-  packet->RemoveHeader (header);
-  Ptr<Tuple> tuple = header.GetTuple ();
-  ProcessTuple (tuple, from);
-}
-
-void
-RapidNetApplicationBase::ProcessTuple (Ptr<Tuple> tuple, Address from)
-{
-  Ipv4Address fromIpv4 =
-      InetSocketAddress::ConvertFrom (from).GetIpv4 ();
-  uint16_t fromPort = InetSocketAddress::ConvertFrom(from).GetPort ();
-
-  //received an encrypted tuple, decrypt it
-  if (tuple->GetName () == SENDLOG_NAME_OPAQUE)
-    {
-      RAPIDNET_LOG_INFO ("Received encrypted tuple " << tuple <<
-        " from " << fromIpv4);
-
-      tuple = Decrypt (tuple);
-    }
-
-  if (!tuple->HasAttribute (RN_ACTION))
-    {
-      RAPIDNET_LOG_INFO ("Received " << tuple << " from " << fromIpv4);
-    }
-
-  //Add -src attribute
-  string srcLocSpec = GetLocSpec (fromIpv4, fromPort);
-  tuple->OverwriteAttribute (TupleAttribute::New (RN_SRC,
-    StrValue::New (srcLocSpec)));
-  DemuxRecv (tuple);
-}
-
 
 Ptr<Tuple>
 RapidNetApplicationBase::CreateNewTuple (string name)
@@ -871,7 +528,6 @@ RapidNetApplicationBase::AddHeapRelationWithKeys (string relnName,
 void
 RapidNetApplicationBase::DemuxRecv (Ptr<Tuple> tuple)
 {
-
   if (IsInsertEvent (tuple))
     {
       OnInsert.Invoke (tuple);
@@ -884,17 +540,11 @@ RapidNetApplicationBase::DemuxRecv (Ptr<Tuple> tuple)
     {
       OnRecv.Invoke (tuple);
     }
-
 }
 
 #define IS_EXTERNAL(tuple) (!tuple->HasAttribute (RN_SRC))
 
-#define IS_INTERNAL_L4(tuple) \
-   ((GetIpv4Address(str_value(tuple->GetAttribute (RN_SRC))) == m_address || \
-   GetIpv4Address(str_value (tuple->GetAttribute (RN_SRC))) == HOME_IP) && \
-    (GetPort(str_value (tuple->GetAttribute (RN_SRC))) == s_Port))
-
-#define IS_INTERNAL_SIMULATION(tuple)\
+#define IS_INTERNAL(tuple) \
    (ipv4_value(tuple->GetAttribute (RN_SRC)) == m_address || \
    ipv4_value (tuple->GetAttribute (RN_SRC)) == HOME_IP)
 
@@ -904,10 +554,7 @@ RapidNetApplicationBase::IsInsertEvent (Ptr<Tuple> tuple)
   bool isInsert = tuple->HasAttribute (RN_ACTION) && tuple->GetAttribute (
     RN_ACTION)->GetValue ()->ToString () == RN_INSERT;
 
-  if(m_l4Platform)
-    return IS_INTERNAL_L4(tuple) && isInsert;
-  else
-    return IS_INTERNAL_SIMULATION(tuple) && isInsert;
+  return IS_INTERNAL(tuple) && isInsert;
 }
 
 bool
@@ -924,10 +571,7 @@ RapidNetApplicationBase::IsDeleteEvent (Ptr<Tuple> tuple)
   bool isDelete = tuple->HasAttribute (RN_ACTION) && tuple->GetAttribute (
     RN_ACTION)->GetValue ()->ToString () == RN_DELETE;
 
-  if(m_l4Platform)
-    return IS_INTERNAL_L4(tuple) && isDelete;
-  else
-    return IS_INTERNAL_SIMULATION(tuple) && isDelete;
+  return IS_INTERNAL(tuple) && isDelete;
 }
 
 bool
@@ -946,19 +590,12 @@ RapidNetApplicationBase::IsRefreshEvent (Ptr<Tuple> tuple, string name)
   bool isRefresh = tuple->HasAttribute (RN_ACTION) && tuple->GetAttribute (
     RN_ACTION)->GetValue ()->ToString () == RN_REFRESH;
 
-  if(m_l4Platform)
-    return isNameMatch && IS_INTERNAL_L4(tuple) && isRefresh;
-  else
-    return isNameMatch && IS_INTERNAL_SIMULATION(tuple) && isRefresh;
+  return isNameMatch && IS_INTERNAL(tuple) && isRefresh;
 }
 
 bool
 RapidNetApplicationBase::IsRecvEvent (Ptr<Tuple> tuple)
 {
-  if(m_l4Platform)
-    return tuple->HasAttribute (RN_SRC)
-      && GetIpv4Address(str_value (tuple->GetAttribute (RN_SRC))) != m_address;
-  else
     return tuple->HasAttribute (RN_SRC)
       && ipv4_value (tuple->GetAttribute (RN_SRC)) != m_address;
 }
@@ -1010,8 +647,6 @@ DeleteTrigger::Invoke (Ptr<Tuple> tuple)
 {
   tuple->OverwriteAttribute (TupleAttribute::New (RN_ACTION, StrValue::New (
     RN_DELETE)));
-	//Lin: fix a bug in a3 here
-  //if(!m_l4Platform)
   GetApplication ()->SendLocal (tuple);
 }
 
@@ -1021,176 +656,6 @@ RefreshTrigger::Invoke (Ptr<Tuple> tuple)
   tuple->OverwriteAttribute (TupleAttribute::New (RN_ACTION, StrValue::New (
     RN_REFRESH)));
   GetApplication ()->SendLocal (tuple);
-}
-
-void 
-RapidNetApplicationBase::Tokenize(const std::string& str,
-    std::vector<std::string>& tokens,
-    const std::string& delimiters)
-{
-  // Skip delimiters at beginning.
-  std::string::size_type lastPos = str.find_first_not_of(delimiters, 0);
-  // Find first "non-delimiter".
-  std::string::size_type pos = str.find_first_of(delimiters, lastPos);
-
-  while (std::string::npos != pos || std::string::npos != lastPos)
-  {
-    // Found a token, add it to the vector.
-    tokens.push_back(str.substr(lastPos, pos - lastPos));
-    // Skip delimiters.  Note the "not_of"
-    lastPos = str.find_first_not_of(delimiters, pos);
-    // Find next "non-delimiter"
-    pos = str.find_first_of(delimiters, lastPos);
-  }
-}
-
-bool 
-RapidNetApplicationBase::HandleConnectionRequest (Ptr<Socket> socket, const Address& address)
-{
-  // Accept all connections
-  return true;
-}
-
-void
-RapidNetApplicationBase::HandleAccept (Ptr<Socket> socket, const Address& address)
-{
-  InetSocketAddress from = InetSocketAddress::ConvertFrom (address);
-  AddConnection (socket, from.GetIpv4(), from.GetPort(), RapidNetTCPConnection::CONNECTED);
-}
-
-void
-RapidNetApplicationBase::HandleClose (Ptr<Socket> socket)
-{
-  // Remove from connection list
-  RemoveConnection (socket);
-}
-
-
-void
-RapidNetApplicationBase::HandleConnectSuccess (Ptr<Socket> socket)
-{
-  Ptr<RapidNetTCPConnection> connection = FindConnection (socket);
-  if (connection != NULL)
-  {
-    RAPIDNET_LOG_INFO ("RapidNet TCP connection established!");
-    connection->SetConnState (RapidNetTCPConnection::CONNECTED);
-    //Start transmission
-    //connection->WriteTCPBuffer (connection->GetSocket (), connection->GetSocket ()->GetTxAvailable ());
-  }
-}
-
-void
-RapidNetApplicationBase::HandleConnectFailure (Ptr<Socket> socket)
-{
-  RAPIDNET_LOG_INFO("Rapidnet TCP connection failed to be established!");
-  HandleClose (socket);
-}
-
-Ptr<RapidNetTCPConnection>
-RapidNetApplicationBase::AddConnection (Ptr<Socket> socket, Ipv4Address ipAddress, uint16_t port, RapidNetTCPConnection::ConnectionState connState)
-{
-  Ptr<RapidNetTCPConnection> rapidNetTCPConnection = Create<RapidNetTCPConnection> (ipAddress, port, socket);
-  rapidNetTCPConnection->SetRecvCallback (MakeCallback (&RapidNetApplicationBase::ProcessTCPMessage, this));
-  rapidNetTCPConnection->SetConnState (connState);
-  socket->SetCloseCallbacks (MakeCallback (&RapidNetApplicationBase::HandleClose, this),
-                             MakeCallback (&RapidNetApplicationBase::HandleClose, this));
-  socket->SetConnectCallback (MakeCallback (&RapidNetApplicationBase::HandleConnectSuccess, this),
-                              MakeCallback (&RapidNetApplicationBase::HandleConnectFailure, this));
-  // Add new connection to map
-  m_tcpConnectionTable.insert (std::make_pair (socket, rapidNetTCPConnection));
-  return rapidNetTCPConnection;
-}
-
-Ptr<RapidNetTCPConnection> 
-RapidNetApplicationBase::FindConnection (Ptr<Socket> socket)
-{
-  TCPConnectionMap::iterator iterator = m_tcpConnectionTable.find (socket);
-  if (iterator == m_tcpConnectionTable.end ())
-    {
-      return NULL;
-    }
-  return (*iterator).second;
-}
-
-Ptr<RapidNetTCPConnection>
-RapidNetApplicationBase::FindConnection (Ipv4Address ipAddress, uint16_t port) 
-{
-  for (TCPConnectionMap::iterator iterator = m_tcpConnectionTable.begin (); iterator != m_tcpConnectionTable.end (); iterator++)
-    {
-      Ptr<RapidNetTCPConnection> connection = (*iterator).second;
-      if (connection->GetIpAddress () == ipAddress && connection->GetPort () == port)
-        {
-          // Connection found
-          return connection;
-        }
-    }
-  return NULL;
-}
-
-void
-RapidNetApplicationBase::RemoveConnection (Ptr<Socket> socket)
-{
-  TCPConnectionMap::iterator iterator = m_tcpConnectionTable.find (socket);
-  if (iterator == m_tcpConnectionTable.end ())
-    {
-      return;
-    }
-
-  m_tcpConnectionTable.erase (iterator);
-  
-  return;
-}
-
-void
-RapidNetApplicationBase::DoPeriodicAuditConnections ()
-{
-  // Remove inactive connections
-  for (TCPConnectionMap::iterator iterator = m_tcpConnectionTable.begin (); iterator != m_tcpConnectionTable.end (); )
-    {
-      Ptr<RapidNetTCPConnection> tcpConnection = (*iterator).second;
-      if ((tcpConnection->GetLastActivityTime ().GetMilliSeconds () + m_tcpInactivityTimeout.GetMilliSeconds ()) < Simulator::Now ().GetMilliSeconds ())
-        {
-          // Remove from table
-          m_tcpConnectionTable.erase (iterator++);
-        }
-      else
-        {
-          ++iterator;
-        }
-    }
-  // Restart timer
-  m_auditTCPConnectionsTimer.Schedule (m_tcpInactivityTimeout);
-}
-
-void
-RapidNetApplicationBase::SendOverTCP (Ipv4Address ipAddress, uint16_t port, Ptr<Packet> packet)
-{
-  if (packet->GetSize ())
-  {
-
-    totalPacketsSent++; 
-    BytesOfDataSent += packet->GetSize();
-    // Check for existing connections
-    Ptr<RapidNetTCPConnection> connection = FindConnection (ipAddress, port);
-    if (connection == NULL)
-    {
-      // Open new connection
-      TypeId tid = TypeId::LookupByName ("ns3::TcpSocketFactory");
-      Ptr<Socket> socket = Socket::CreateSocket (GetNode (), tid);
-      connection = AddConnection (socket, ipAddress, port, RapidNetTCPConnection::NOT_CONNECTED);
-      socket->Bind ();
-      socket->Connect (InetSocketAddress (ipAddress, port));
-    }
-
-    connection->SendTCPData (packet);
-        
-  }
-}
-
-void
-RapidNetApplicationBase::SetL4Platform (bool l4Platform)
-{
-  m_l4Platform = l4Platform;
 }
 
 BOOST_CLASS_EXPORT_IMPLEMENT(ns3::rapidnet::AppTrigger)

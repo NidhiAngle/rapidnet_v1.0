@@ -74,7 +74,9 @@ public:
     return Relation::GetTypeId ();
   }
 
-  Relation (string name = "no-name");
+  Relation();
+
+  Relation (string name);
 
   virtual ~Relation () {}
 
@@ -117,11 +119,6 @@ public:
   virtual list<Ptr<Tuple> > GetAllTuples ();
 
   /**
-   * \brief Clear all tuples
-   */
-  virtual void ClearAllTuples ();
-
-  /**
    * \brief Returns the number of tuples in the relation.
    */  virtual uint32_t Count ();
   virtual void SetRelaxed (bool value = true);
@@ -133,6 +130,21 @@ public:
   static Ptr<Relation> New (string name);
 
 protected:
+
+  friend class boost::serialization::access;
+
+  template<typename Archive>
+  void serialize(Archive& ar, const unsigned version)
+  {
+    std::cout << "RelationBase serialize..." << endl;
+    ar & boost::serialization::base_object<RelationBase>(*this);
+    ar & m_relaxed;
+    std::cout << "m_relaxed done!";
+    ar & m_keyAttributes;
+    std::cout << "m_keyAttributes done!";
+    ar & m_tuples;
+    std::cout << "m_tuples done!";
+  }
 
   /* If set to true, means that type checking be relaxed. */
   bool m_relaxed;
@@ -153,5 +165,7 @@ protected:
 
 } //namespace rapidnet
 } //namepsace ns3
+
+BOOST_CLASS_EXPORT_KEY(ns3::rapidnet::Relation)
 
 #endif // RELATION_H

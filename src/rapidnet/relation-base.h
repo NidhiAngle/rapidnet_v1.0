@@ -30,8 +30,8 @@
 #include "assignor.h"
 #include "rapidnet-utils.h"
 
-#include <boost/serialization/export.hpp>
 #include <boost/serialization/base_object.hpp>
+#include <boost/serialization/export.hpp>
 
 #define JOIN_NAMES(lname, rname) lname + "-join-" + rname
 #define COUNT_STAR "COUNT_STAR"
@@ -73,7 +73,9 @@ public:
     return RelationBase::GetTypeId();
   }
 
-  RelationBase(string name = "no-name");
+  RelationBase();
+
+  RelationBase(string name);
 
   virtual ~RelationBase() {}
 
@@ -125,11 +127,6 @@ public:
   virtual list<Ptr<Tuple> > GetAllTuples () = 0;
 
   /**
-   * \brief Clear all the tuples
-   */
-  virtual void ClearAllTuples () = 0;
-
-  /**
    * \brief Returns the number of tuples in the relation.
    */
   virtual uint32_t Count () = 0;
@@ -175,7 +172,7 @@ public:
    *
    */
   virtual Ptr<RelationBase> Join (Ptr<Tuple> rTuple, list<string> lAttrs,
-    list<string> rAttrs, bool qualify = false, uint32_t joinNum = 0, bool preserveAttrs = false);
+    list<string> rAttrs, bool qualify = false);
 
   /**
    * \brief Implements a database join operation.
@@ -193,7 +190,7 @@ public:
    *           So they are implicitly qualified as of now.
    */
   virtual Ptr<RelationBase> Join (Ptr<RelationBase> reln,
-    list<string> lAttrNames, list<string> rAttrNames, bool qualify = false, uint32_t joinNum = 0, bool preserveAttrs = false);
+    list<string> lAttrNames, list<string> rAttrNames, bool qualify = false);
 
   /**
    * \brief Invokes the given Assignor on all tuples of this relation.
@@ -228,12 +225,6 @@ public:
     return m_timeToLive.GetSeconds () != TIME_INFINITY;
   }
 
-  void PreserveJoinAttributes (Ptr<Tuple> src, Ptr<Tuple> dest, uint32_t joinNum);
-
-  void Tokenize(const std::string& str,
-    std::vector<std::string>& tokens,
-    const std::string& delimiters);
-
 protected:
 
   friend class boost::serialization::access;
@@ -263,7 +254,7 @@ private:
     list<string> attrNames);
 
   list<Ptr<Tuple> > _DoJoin (list<string> lAttrNames,
-    Ptr<Tuple> rTuple, list<Ptr<TupleAttribute> > rAttrs, bool qualify, uint32_t joinNum, bool preserveAttrs);
+    Ptr<Tuple> rTuple, list<Ptr<TupleAttribute> > rAttrs, bool qualify);
 
   bool _IsMatch (Ptr<Tuple> lTuple, list<string> lAttrNames,
     list<Ptr<TupleAttribute> > rAttrs);

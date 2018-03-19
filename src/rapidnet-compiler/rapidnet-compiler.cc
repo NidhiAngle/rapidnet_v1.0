@@ -27,12 +27,11 @@
 #include "localize-context.h"
 #include "table-store.h"
 #include "rapidnet-context.h"
+#include "comp-attr-graph.h"
 
 #include "ns3/ptr.h"
 #include "ns3/command-line.h"
 #include "ns3/log.h"
-
-#include <unistd.h>
 
 using namespace std;
 using namespace ns3;
@@ -117,13 +116,22 @@ void printToFile (string filename, string contents)
  *        table information.
  */
 void parseOverlog (string overlogFile, Ptr<OlContext> ctxt,
-  Ptr<TableStore> tableStore, bool provenanceEnabled)
+  Ptr<TableStore> tableStore, bool provenanceEnabled, bool staticAnalysisEnabled)
 {
   string program = preprocessReadOverlogProgram (overlogFile);
   cout << "Parsing NDlog..." << endl;
 
   istringstream istr (program);
   ctxt->ParseStream (&istr, provenanceEnabled);
+
+  if (staticAnalysisEnabled == true)
+  {
+	  //TODO: use command-line argument for event name
+	  AttriGraph newGraph(ctxt, "packet");
+	  newGraph.PrintGraph();
+	  //newGraph.FindEquiAttrs();
+	  //newGraph.PrintEquiAttrs();
+  }
 
   if(provenanceEnabled && !ctxt->IsSendlog())
   {
@@ -163,7 +171,7 @@ void AddLinkTableInfo (string overlogFile, string baseOverlogFile, Ptr<
 
   Ptr<OlContext> ctxt (new OlContext ());
   Ptr<TableStore> baseTableStore (new TableStore (ctxt));
-  parseOverlog (baseOverlogFile, ctxt, baseTableStore, false);
+  parseOverlog (baseOverlogFile, ctxt, baseTableStore, false, false);
   OlContext::TableInfoMap baseTables = *baseTableStore->GetTableInfos();
 
   // Add all tables in the base application to this application for
@@ -181,12 +189,13 @@ void AddLinkTableInfo (string overlogFile, string baseOverlogFile, Ptr<
  * \brief Compiles the application with given base application
  */
 void compile (string overlogFile, string baseOverlogFile,
-  bool provenanceEnabled)
+  bool provenanceEnabled, bool staticAnalysisEnabled)
 {
   // Parse
   Ptr<OlContext> ctxt (new OlContext ());
   Ptr<TableStore> tableStore (new TableStore (ctxt));
-  parseOverlog (overlogFile, ctxt, tableStore, provenanceEnabled);
+  parseOverlog (overlogFile, ctxt, tableStore,
+		  	    provenanceEnabled, staticAnalysisEnabled);
 
   // Add link table info if discovery. Only when the Localize and
   // ECA context know that the link table is materialized as a part
@@ -221,10 +230,13 @@ int main (int argc, char** argv)
   LogComponentEnable ("EcaContext", LOG_LEVEL_ERROR);
   LogComponentEnable ("RapidNetContext", LOG_LEVEL_ERROR);
   LogComponentEnable ("RapidNetCompiler", LOG_LEVEL_INFO);
+  //LogComponentEnable ("AttriGraph", LOG_LEVEL_INFO);
+  LogComponentEnable ("AttriGraph", LOG_LEVEL_FUNCTION);
 
   string overlogFile;
   string baseoverlogFile = DEFAULT_RN_APP_BASE;
   bool provenance = 0;
+  bool staticAnalysis = false;
 
   CommandLine cmd;
   cmd.AddValue ("ndlog", "Application NDlog file", overlogFile);
@@ -232,6 +244,8 @@ int main (int argc, char** argv)
     baseoverlogFile);
   cmd.AddValue ("provenance", "Enable provenance for this application (optional)",
     provenance);
+  cmd.AddValue ("static-analysis", "Enable attribute-level static analysis for this application (optional)",
+      staticAnalysis);
   cmd.Parse (argc, argv);
 
   NS_LOG_INFO ("Application NDlog                             : "
@@ -240,8 +254,10 @@ int main (int argc, char** argv)
       << baseoverlogFile);
   NS_LOG_INFO ("Provenance capability                         : "
     << (provenance ? "Enabled": "Disabled"));
+  NS_LOG_INFO ("Static Analysis                         : "
+      << (staticAnalysis ? "Enabled": "Disabled"));
 
-  compile (overlogFile, baseoverlogFile, provenance);
+  compile (overlogFile, baseoverlogFile, provenance, staticAnalysis);
 
   return 0;
 }

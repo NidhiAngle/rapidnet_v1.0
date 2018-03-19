@@ -70,11 +70,6 @@ public:
   virtual list<Ptr<Tuple> > GetAllTuples ();
 
   /**
-   * \brief Clear all the tuples
-   */
-  virtual void ClearAllTuples ();
-
-  /**
    * \brief Returns the number of tuples in the relation.
    */
   virtual uint32_t Count ();
